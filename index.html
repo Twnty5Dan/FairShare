@@ -1,0 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>FairShare</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FairShare">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--card3:#3a3a3c;--sep:#38383a;--text:#fff;--muted:#8e8e93;--muted2:#636366;--blue:#0a84ff;--green:#30d158;--red:#ff453a;--orange:#ff9f0a;--p1:#0a84ff;--p2:#bf5af2}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+body{padding:max(env(safe-area-inset-top),16px) 0 calc(96px + env(safe-area-inset-bottom));overflow-x:hidden}
+button{font-family:inherit}
+::-webkit-scrollbar{display:none}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:8px 2px 18px}
+h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin:0}
+.sub{color:var(--muted);font-size:14px}
+.small{font-size:12.5px;color:var(--muted);line-height:1.45}
+.small b,.w{color:#fff;font-weight:600}
+.card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:14px}
+.label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.big{font-size:40px;font-weight:800;letter-spacing:-1px;margin:2px 0 4px;font-variant-numeric:tabular-nums}
+.mid{font-size:22px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:14px;padding:14px 10px;font:600 16px -apple-system,system-ui,sans-serif;color:#fff;background:var(--blue);cursor:pointer;text-align:center}
+.btn:active,.link:active,.tap:active,.copy:active,.tick:active,.chip:active{opacity:.6}
+.btn:disabled{opacity:.4}
+.btn.gray{background:var(--card2)}
+.card .btn.gray,.banner .btn.gray{background:var(--card3)}
+.btn.go{background:var(--green);color:#000}
+.btn.del{background:var(--card2);color:var(--red)}
+.btn.del.armed{background:var(--red);color:#fff}
+.btn.sm{padding:10px 8px;font-size:14px;border-radius:12px}
+.btns{display:flex;gap:10px}.btns>*{flex:1;min-width:0}
+.mt{margin-top:14px}.mt-s{margin-top:8px}
+.list{background:var(--card);border-radius:18px;overflow:hidden;margin-bottom:14px}
+.item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:.5px solid var(--sep)}
+.item:last-child{border-bottom:0}
+.item.sel{background:rgba(10,132,255,.14)}
+.grow{flex:1;min-width:0}
+.t{font-weight:500;overflow-wrap:anywhere}
+.s{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.amt{font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chev{color:var(--muted2);font-size:20px;line-height:1}
+.empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:14px}
+.section{display:flex;justify-content:space-between;align-items:center;margin:26px 4px 8px;gap:10px}
+.section h3{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.link{background:none;border:0;color:var(--blue);font:500 15px -apple-system,system-ui,sans-serif;padding:4px;cursor:pointer;white-space:nowrap}
+.link.sm{font-size:14px}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--card2);margin:4px 0 12px;gap:2px}
+.bar div{height:100%}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;font-size:15px}
+.kv>span:first-child{color:var(--muted)}
+.kv b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hr{height:.5px;background:var(--sep);margin:8px 0}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.pill.ok{background:rgba(48,209,88,.15);color:var(--green)}
+.pill.due{background:rgba(255,159,10,.15);color:var(--orange)}
+.pill.bad{background:rgba(255,69,58,.15);color:var(--red)}
+.pill.exp{background:rgba(142,142,147,.18);color:var(--muted)}
+.c-green{color:var(--green)}.c-red{color:var(--red)}.c-orange{color:var(--orange)}.c-muted{color:var(--muted)}.c-blue{color:var(--blue)}.c-p2{color:var(--p2)}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.avatar.sm{width:24px;height:24px;font-size:11px}
+.mnav{display:flex;gap:6px}
+.mnav button{background:var(--card);border:0;color:var(--blue);width:32px;height:32px;border-radius:16px;font-size:17px;cursor:pointer}
+.mnav button:disabled{opacity:.3}
+/* hero */
+.hero-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.flow{display:flex;align-items:center;gap:4px;min-width:0}
+.flow .arr{color:var(--muted);font-size:13px}
+.hero-lbl{font-size:14px;color:var(--muted);margin-top:14px}
+.nx{display:flex;align-items:center;gap:12px;padding:7px 0}
+.nx-d{width:42px;height:42px;border-radius:12px;background:var(--card2);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;line-height:1}
+.nx-day{font-size:17px;font-weight:700}
+.nx-mon{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-top:3px}
+.state{display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px;background:var(--card2)}
+.state.ok{background:rgba(48,209,88,.12);color:var(--green)}
+.state.warn{background:rgba(255,159,10,.12);color:var(--orange)}
+.state.bad{background:rgba(255,69,58,.12);color:var(--red)}
+.cols{display:flex;gap:12px}.cols>div{flex:1;min-width:0}
+/* division */
+.dv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dv-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin:16px 0 2px;background:var(--card2)}
+.dv-bar i{display:block;height:100%;min-width:3px}
+.step{display:flex;align-items:center;gap:10px;margin:20px 0 2px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.step .n{width:20px;height:20px;border-radius:50%;background:var(--card3);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;letter-spacing:0;flex:none}
+.step .r{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:500;font-size:13px}
+.dv-line{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--sep)}
+.dv-line:last-child,.dv-line.last{border-bottom:0}
+.dv-ic{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.dv-line.done .t{text-decoration:line-through;opacity:.5}
+.dv-line.done .copy{opacity:.5}
+.copy{background:none;border:0;color:#fff;font:600 16px/1.2 -apple-system,system-ui,sans-serif;padding:6px 0 6px 4px;cursor:pointer;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tick{width:30px;height:30px;border-radius:50%;border:2px solid var(--muted2);background:none;flex:none;color:transparent;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.tick.on{background:var(--green);border-color:var(--green);color:#000}
+.send{background:rgba(10,132,255,.1);border-radius:14px;padding:4px 12px 12px;margin-top:8px}
+.send .dv-line{border:0}
+.banner{background:var(--card2);border-radius:12px;padding:12px 14px;font-size:14px;margin-top:12px;line-height:1.4}
+.banner.warn{background:rgba(255,159,10,.12)}
+.banner .btns{margin-top:10px}
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:space-around;background:rgba(28,28,30,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:.5px solid var(--sep);padding:7px 4px max(env(safe-area-inset-bottom),8px)}
+.tabs button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font:500 10px -apple-system,system-ui,sans-serif;width:64px;cursor:pointer;position:relative}
+.tabs button.on{color:var(--blue)}
+.tabs svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs .badge{position:absolute;top:-2px;left:38px;width:9px;height:9px;border-radius:50%;background:var(--orange);border:2px solid #1c1c1e}
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{background:var(--card);width:100%;max-width:520px;max-height:92vh;max-height:92dvh;overflow-y:auto;border-radius:22px 22px 0 0;padding:20px 18px calc(28px + env(safe-area-inset-bottom));animation:up .28s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px}
+.sheet-head h2{margin:0;font-size:21px;letter-spacing:-.3px}
+.x{background:var(--card2);color:var(--muted);border:0;width:32px;height:32px;border-radius:16px;font-size:18px;cursor:pointer;flex:none}
+.sheet .list{background:var(--card2)}
+.sheet .item{border-bottom-color:var(--card3)}
+.field{margin-bottom:14px}
+.field>label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 6px 4px}
+input,select,textarea{width:100%;background:var(--card2);color:#fff;border:0;border-radius:12px;padding:14px;font:17px -apple-system,system-ui,sans-serif;color-scheme:dark;outline:none;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 2px var(--blue)}
+.card input,.card select,.card textarea{background:var(--card2)}
+input.money{font-size:26px;font-weight:700}
+textarea{font-size:13px;font-family:ui-monospace,Menlo,monospace}
+.seg{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:none;color:#fff;padding:10px 4px;border-radius:9px;font:500 14px -apple-system,system-ui,sans-serif;cursor:pointer;min-width:0}
+.seg button.on{background:#636366}
+.seg.mini button{padding:8px 2px;font-size:13px}
+.sheet .seg{background:var(--card2)}
+.toggle{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:12px;padding:12px 14px;gap:12px}
+.toggle input{width:22px;height:22px;-webkit-appearance:auto;appearance:auto;accent-color:var(--blue);flex:none;padding:0;box-shadow:none}
+.toast{position:fixed;left:50%;top:max(env(safe-area-inset-top),14px);transform:translateX(-50%);background:#3a3a3c;color:#fff;padding:10px 16px;border-radius:22px;font-size:14px;font-weight:500;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none;max-width:92%;display:flex;align-items:center;gap:12px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.toast.show{opacity:1}
+.toast.act{pointer-events:auto}
+.toast button{background:none;border:0;color:var(--blue);font:600 14px -apple-system,system-ui,sans-serif;padding:2px;cursor:pointer}
+.who{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.alert{display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--blue)}
+.alert.warn{border-left-color:var(--orange)}.alert.bad{border-left-color:var(--red)}.alert.good{border-left-color:var(--green)}
+.sheet .alert{background:var(--card2)}
+.alert .ic{font-size:18px;line-height:1.2;flex:none}
+.alert .msg{flex:1;font-size:14px;line-height:1.4;min-width:0}
+.alert .msg b{font-weight:600}
+.alert .acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.alert .acts button{border:0;border-radius:10px;padding:8px 12px;font:600 13px -apple-system,system-ui,sans-serif;background:var(--card2);color:#fff;cursor:pointer}
+.alert .acts button.pri{background:var(--blue)}
+.alert .acts button.go{background:var(--green);color:#000}
+.cal-day{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 16px 4px;display:flex;justify-content:space-between}
+.cal-day span{text-transform:none;letter-spacing:0;font-weight:500}
+.tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--muted);margin-left:6px;vertical-align:1px;white-space:nowrap}
+.tag.sh{background:rgba(10,132,255,.15);color:var(--blue)}
+.potrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--sep)}
+.potrow:last-child{border-bottom:0}
+.status{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.status.ok{background:rgba(48,209,88,.15);color:var(--green)}
+.status.watch{background:rgba(255,159,10,.15);color:var(--orange)}
+.status.over{background:rgba(255,69,58,.15);color:var(--red)}
+/* split editor */
+.pk{background:var(--card2);border-radius:14px;padding:10px;margin-bottom:10px;border-left:4px solid var(--muted)}
+.pk.auto{opacity:.85;display:flex;align-items:center;gap:10px}
+.pk-top,.pk-bot{display:flex;gap:8px;align-items:center}
+.pk-bot{margin-top:8px}
+.pk input{background:var(--card3);padding:10px;font-size:16px;border-radius:10px}
+.pk .pk-ic{width:46px;flex:none;text-align:center;padding:10px 2px}
+.pk-name{flex:1;min-width:0}
+.pk-btn{width:34px;height:40px;border:0;border-radius:10px;background:var(--card3);color:#fff;font-size:15px;flex:none;cursor:pointer;padding:0}
+.pk-btn:disabled{opacity:.25}
+.pk-btn.del{color:var(--red)}
+.pk-val{display:flex;align-items:center;background:var(--card3);border-radius:10px;flex:0 0 104px}
+.pk .pk-val input{background:none;width:100%;min-width:0;padding:10px 4px 10px 10px}
+.pk-val span{color:var(--muted);font-size:13px;padding-right:10px;white-space:nowrap}
+.pk .seg{flex:1;background:var(--card3)}
+.pk .seg button.on{background:#5a5a5e}
+.chip{border:0;border-radius:20px;padding:8px 10px;font:600 12px -apple-system,system-ui,sans-serif;background:var(--card3);color:var(--muted);flex:none;cursor:pointer}
+.chip.on{background:rgba(48,209,88,.18);color:var(--green)}
+.sw{width:16px;height:16px;border-radius:50%;border:0;flex:none;cursor:pointer;padding:0}
+details{background:var(--card);border-radius:18px;margin-bottom:14px}
+details summary{padding:16px 18px;cursor:pointer;font-weight:500;list-style:none;display:flex;justify-content:space-between}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:'›';color:var(--muted2);font-size:20px;line-height:1;transition:transform .2s}
+details[open] summary::after{transform:rotate(90deg)}
+details .inner{padding:0 18px 18px}
+.screen{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.auth-box{width:100%;max-width:380px}
+.auth-box h1{font-size:36px}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--card2);border-top-color:var(--blue);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="view"></div>
+
+<nav class="tabs" id="tabs"></nav>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)app.closeSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="screen" id="auth"></div>
+<div class="screen" id="loading" style="display:flex;flex-direction:column;gap:14px"><div class="spinner"></div><div class="sub">Loading FairShare…</div></div>
+
+
+<script src="config.js"></script>
+<script>
+var app = (function () {
+  'use strict';
+
+  /* ================= helpers ================= */
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function startOfDay(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+  function today() { return startOfDay(new Date()); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function ym(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  function parseYmd(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +(p[2] || 1)); }
+  function mkAdd(mk, n) { var p = mk.split('-'); return ym(new Date(+p[0], +p[1] - 1 + n, 1)); }
+  function mkYear(mk) { return +mk.slice(0, 4); }
+  function mkMonth0(mk) { return +mk.slice(5, 7) - 1; }
+  function dim(y, m0) { return new Date(y, m0 + 1, 0).getDate(); }
+  function lastDayOf(mk) { return new Date(mkYear(mk), mkMonth0(mk) + 1, 0); }
+  function daysBetween(a, b) { return Math.round((startOfDay(b) - startOfDay(a)) / 86400000); }
+  function monthName(mk, short) { return parseYmd(mk + '-01').toLocaleDateString('en-GB', short ? { month: 'short' } : { month: 'long', year: 'numeric' }); }
+  function monthOnly(mk) { return parseYmd(mk + '-01').toLocaleDateString('en-GB', { month: 'long' }); }
+  function dayLabel(d) { return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
+  function dayLong(d) { return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
+  function relDay(d) {
+    var n = daysBetween(today(), d);
+    if (n === 0) return 'today';
+    if (n === 1) return 'tomorrow';
+    if (n === -1) return 'yesterday';
+    return n > 0 ? 'in ' + n + ' days' : -n + ' days ago';
+  }
+  function uid(p) { return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function sum(arr, f) { return arr.reduce(function (s, x) { return s + (typeof f === 'function' ? f(x) : f ? (+x[f] || 0) : (+x || 0)); }, 0); }
+  function r2(n) { return Math.round((+n || 0) * 100) / 100; }
+  function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
+  function round5(n) { return Math.max(5, Math.round(n / 5) * 5); }
+  function money(n) {
+    n = r2(n || 0);
+    var neg = n < 0, s = Math.abs(n).toFixed(2).split('.');
+    s[0] = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + '€' + s[0] + '.' + s[1];
+  }
+  function money0(n) { var s = money(n); return s.slice(-3) === '.00' ? s.slice(0, -3) : s; }
+  function ord(n) { n = +n; var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+  function pct(x) { return Math.round(x * 100) + '%'; }
+  function pct1(x) { return (Math.round(x * 1000) / 10) + '%'; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  // Accepts 1200 · 1.200 · 1,200 · 12,50 · 12.50 · 1.234,56 · 1,234.56 · €1 200
+  function parseEuro(v) {
+    if (v == null) return NaN;
+    v = String(v).replace(/[\s€  ']/g, '');
+    if (!v) return NaN;
+    var neg = /^[-−]/.test(v);
+    v = v.replace(/^[-−+]/, '');
+    var lc = v.lastIndexOf(','), ld = v.lastIndexOf('.'), dec = -1;
+    if (lc > -1 && ld > -1) dec = Math.max(lc, ld);
+    else if (lc > -1 || ld > -1) {
+      var i = Math.max(lc, ld), count = v.split(v.charAt(i)).length - 1, after = v.length - i - 1;
+      dec = count === 1 && after !== 3 ? i : -1; // one separator + 3 digits = thousands
+    }
+    var ip = (dec > -1 ? v.slice(0, dec) : v).replace(/[.,]/g, ''), fp = dec > -1 ? v.slice(dec + 1) : '';
+    if (!/^\d*$/.test(ip) || !/^\d*$/.test(fp) || (!ip && !fp)) return NaN;
+    var n = parseFloat((ip || '0') + '.' + (fp || '0'));
+    return neg ? -n : n;
+  }
+  function $(id) { return document.getElementById(id); }
+  function val(id) { var e = $(id); return e ? e.value : ''; }
+  function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
+  function tint(hex, a) { var n = parseInt(String(hex).slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + (a || 0.18) + ')'; }
+
+  /* ================= Belgian holidays / paydays ================= */
+  var holidayCache = {};
+  function belgianHolidays(y) {
+    if (holidayCache[y]) return holidayCache[y];
+    var f = Math.floor, a = y % 19, b = f(y / 100), c = y % 100, d = f(b / 4), e = b % 4,
+      g = f((b - f((b + 8) / 25) + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+      i = f(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = f((a + 11 * h + 22 * l) / 451),
+      em = f((h + l - 7 * m + 114) / 31), ed = ((h + l - 7 * m + 114) % 31) + 1;
+    function add(n) { var x = new Date(y, em - 1, ed + n); return pad(x.getMonth() + 1) + '-' + pad(x.getDate()); }
+    holidayCache[y] = ['01-01', '05-01', '07-21', '08-15', '11-01', '11-11', '12-25', add(1), add(39), add(50)];
+    return holidayCache[y];
+  }
+  function isOffDay(d) {
+    var w = d.getDay();
+    if (w === 0 || w === 6) return true;
+    return belgianHolidays(d.getFullYear()).indexOf(pad(d.getMonth() + 1) + '-' + pad(d.getDate())) > -1;
+  }
+  function payDate(y, m0, day, shift) {
+    var first = new Date(y, m0, 1); y = first.getFullYear(); m0 = first.getMonth();
+    var d = new Date(y, m0, Math.min(+day || 1, dim(y, m0))), moved = false;
+    if (shift) { var guard = 0; while (isOffDay(d) && guard++ < 10) { d.setDate(d.getDate() - 1); moved = true; } }
+    return { date: d, moved: moved };
+  }
+  // last working day strictly before d
+  function workdayBefore(d) { var x = addDays(d, -1), g = 0; while (isOffDay(x) && g++ < 10) x = addDays(x, -1); return x; }
+
+  /* ================= data ================= */
+  var D;
+  var P1C = '#0a84ff', P2C = '#bf5af2';
+  var PALETTE = ['#30d158', '#ff9f0a', '#64d2ff', '#ff375f', '#ffd60a', '#5e5ce6', '#66d4cf', '#ac8e68', '#ff6482', '#bf5af2'];
+  // Revolut pockets. Divided top to bottom on every payday, after the bills.
+  var DEFAULT_POCKETS = [
+    { id: 'savings', name: 'Savings', icon: '🐷', color: '#30d158', type: 'percent', save: true },
+    { id: 'food', name: 'Food', icon: '🛒', color: '#ff9f0a', type: 'fixed', save: false },
+    { id: 'buffer', name: 'Buffer', icon: '🛟', color: '#64d2ff', type: 'fixed', save: false },
+    { id: 'fun', name: 'Fun', icon: '🎉', color: '#ff375f', type: 'fixed', save: false }
+  ];
+  var LEGACY_POTS = ['food', 'fun', 'buffer'];
+  function defaultPeople() {
+    return [
+      { id: 'p1', role: 'manager', name: 'Daniil', payMode: 'dual', day1: 25, amount1: 1050, day2: 7, amount2: 950, offset2: 1, holidayShift: true, savingsPct: 10, pots: { food: 300, fun: 200, buffer: 50 }, leftover: 'savings', round: true, updatedAt: 0 },
+      { id: 'p2', role: 'partner', name: 'Sabrina', payMode: 'dual', day1: 20, amount1: 240, day2: 6, amount2: 1200, offset2: 1, holidayShift: false, savingsPct: 10, pots: { food: 250, fun: 150, buffer: 30 }, leftover: 'savings', round: true, updatedAt: 0 }
+    ];
+  }
+  function defaultSettings() { return { startMonth: ym(today()), openingBalance: 0, sendMode: 'each', sendSlot: '', revolutTag: '', updatedAt: 0 }; }
+  function defaultData() {
+    return {
+      version: 26, people: defaultPeople(),
+      bills: [], incomes: [], transfers: [], checkins: [], snapshots: {}, dismissed: {},
+      settings: defaultSettings(),
+      local: { me: null }
+    };
+  }
+  function potsFromDaily(daily, foodPct) {
+    var month = (+daily || 0) * 30, fp = foodPct == null ? 50 : +foodPct;
+    return { food: Math.round(month * fp / 100), fun: Math.round(month * (100 - fp) / 100), buffer: 0 };
+  }
+  function pocketsFromLegacy(p) {
+    var pots = p.pots || {};
+    return DEFAULT_POCKETS.map(function (d, i) {
+      var x = JSON.parse(JSON.stringify(d));
+      x.value = d.id === 'savings' ? (+p.savingsPct || 0) : (+pots[d.id] || 0);
+      x.order = i;
+      return x;
+    });
+  }
+  function normalizePocket(k, i) {
+    var known = byId(DEFAULT_POCKETS, k.id) || {};
+    return {
+      id: String(k.id), name: String(k.name || known.name || 'Pocket').slice(0, 40), icon: String(k.icon || known.icon || '💰').slice(0, 8),
+      color: /^#[0-9a-f]{6}$/i.test(k.color) ? k.color : (known.color || PALETTE[i % PALETTE.length]),
+      type: k.type === 'percent' ? 'percent' : 'fixed', value: Math.max(0, +k.value || 0), save: !!k.save,
+      order: k.order != null && !isNaN(+k.order) ? +k.order : i
+    };
+  }
+  // Keep the fields the previous app version reads, so an old copy still open on a phone shows sane numbers.
+  function mirrorLegacy(p) {
+    var sv = byId(p.pockets, 'savings');
+    p.savingsPct = sv && sv.type === 'percent' ? sv.value : 0;
+    p.pots = p.pots || {};
+    LEGACY_POTS.forEach(function (id) { var k = byId(p.pockets, id); p.pots[id] = k && k.type === 'fixed' ? k.value : 0; });
+  }
+
+  function migrateV24(old) {
+    var d = defaultData();
+    if (!old || !old.roommates || !old.roommates.length) return d;
+    var rms = old.roommates;
+    var mgr = rms.filter(function (r) { return /daniil/i.test(r.name); })[0] || rms.filter(function (r) { return r.id === 'r2'; })[0] || rms[0];
+    var ptr = rms.filter(function (r) { return r !== mgr; })[0];
+    var idMap = {}; idMap[mgr.id] = 'p1'; if (ptr) idMap[ptr.id] = 'p2';
+    function copy(src, dst) {
+      if (!src) return;
+      dst.name = src.name || dst.name;
+      if (src.dailyBudget != null) dst.pots = potsFromDaily(src.dailyBudget, src.foodSplitPct);
+      var s = src.salaryStructure || {};
+      if (s.mode) {
+        dst.payMode = s.mode === 'dual' ? 'dual' : 'single';
+        dst.day1 = +s.date1 || dst.day1; dst.amount1 = +s.amount1 || 0;
+        dst.day2 = +s.date2 || dst.day2; dst.amount2 = +s.amount2 || 0;
+        dst.offset2 = s.offset2 != null ? +s.offset2 : 1;
+        dst.holidayShift = !!s.adjustForHolidays;
+      }
+    }
+    copy(mgr, d.people[0]); copy(ptr, d.people[1]);
+    d.bills = (old.bills || []).map(function (b) {
+      return {
+        id: b.id || uid('b'), title: b.title || 'Bill', amount: +b.amount || 0,
+        frequency: +b.frequency || 1, dueMonth: +b.lastPaymentMonth || 1, day: +b.paymentDay || 1,
+        shared: !b.isPersonal, owner: idMap[b.paidBy] || 'p1', updatedAt: 0
+      };
+    });
+    d._hist = importHistory(d, old);
+    d._migrated = true;
+    return d;
+  }
+
+  function isLegacy(x) { return !!x && (x.legacy || String(x.id).indexOf('old_') === 0); }
+  function legacyKey(x, kind) { return kind + '|' + (x.personId || x.from || '') + '|' + r2(+x.amount) + '|' + x.date; }
+  // Clean switch-over from the old Scriptable app: start counting the month after it was last used.
+  function cutover(d) {
+    if (d.cutoverDone) return;
+    var legacyTr = d.transfers.filter(function (t) { return isLegacy(t) && !t.deleted; });
+    if (!legacyTr.length) return;
+    d.cutoverDone = Date.now();
+    if ((d.settings.updatedAt || 0) > 0) return;
+    var last = legacyTr.map(function (t) { return String(t.date).slice(0, 7); }).sort().pop();
+    var next = mkAdd(last > ym(today()) ? ym(today()) : last, 1);
+    if (next > d.settings.startMonth) d.settings.startMonth = next;
+  }
+  // Each phone of the old app kept its own copy of the history: keep one, hide the rest.
+  function dedupeLegacy(d) {
+    var n = 0;
+    [['incomes', 'i'], ['transfers', 't']].forEach(function (pair) {
+      var seen = {};
+      d[pair[0]].forEach(function (x) {
+        if (!isLegacy(x) || x.deleted) return;
+        x.legacy = true;
+        var k = legacyKey(x, pair[1]);
+        if (seen[k]) { x.deleted = true; x.dup = true; x.updatedAt = Date.now(); n++; } else seen[k] = 1;
+      });
+    });
+    return n;
+  }
+  function legacyIdMap(old) {
+    var rms = old.roommates || [], map = {};
+    var mgr = rms.filter(function (r) { return /daniil/i.test(r.name); })[0] || rms.filter(function (r) { return r.id === 'r2'; })[0] || rms[0];
+    rms.forEach(function (r) { map[r.id] = r === mgr ? 'p1' : 'p2'; });
+    return map;
+  }
+  // Old deposit logs become income, old settlements become payments. Fixed ids: safe to run twice.
+  function importHistory(d, old) {
+    if (!old || !old.roommates) return { incomes: 0, transfers: 0 };
+    var map = legacyIdMap(old), seen = {}, nInc = 0, nTr = 0;
+    d.incomes.forEach(function (x) { seen[x.id] = 1; if (isLegacy(x) && !x.deleted) seen[legacyKey(x, 'i')] = 1; });
+    d.transfers.forEach(function (x) { seen[x.id] = 1; if (isLegacy(x) && !x.deleted) seen[legacyKey(x, 't')] = 1; });
+    (old.salaryLogs || []).forEach(function (l) {
+      var id = 'old_i_' + l.id, pid = map[l.userId];
+      if (seen[id] || !pid || !(+l.amount > 0)) return;
+      var p = byId(d.people, pid), logged = new Date(+l.date || Date.now()), slot = l.part === 2 ? 'd2' : 'd1';
+      var best = null;
+      if (p && (p.payMode === 'single' || p.payMode === 'dual')) {
+        for (var off = -1; off <= 1; off++) {
+          var mk = mkAdd(ym(logged), off);
+          schedule(p, mk).forEach(function (s) {
+            if (s.slot !== slot) return;
+            var diff = Math.abs(daysBetween(s.date, logged));
+            if (diff <= 10 && (!best || diff < best.diff)) best = { date: s.date, diff: diff };
+          });
+        }
+      }
+      var label = p && p.payMode === 'dual' ? (slot === 'd1' ? 'Voorschot' : 'Rest of pay') : 'Salary';
+      var inc = { id: id, personId: pid, amount: r2(+l.amount), date: ymd(best ? best.date : startOfDay(logged)), slot: best ? slot : null, note: label + ' (old app)', legacy: true, updatedAt: 1 };
+      seen[id] = 1;
+      if (seen[legacyKey(inc, 'i')]) return;
+      seen[legacyKey(inc, 'i')] = 1; d.incomes.push(inc); nInc++;
+    });
+    (old.settledCycles || []).forEach(function (c) {
+      if (typeof c !== 'object' || !(Math.abs(+c.amount) > 0.004)) return;
+      var id = 'old_t_' + c.cycleId;
+      if (seen[id]) return;
+      var cs = new Date(+c.cycleId);
+      var tr = { id: id, from: 'p2', amount: r2(Math.abs(+c.amount)), date: ymd(startOfDay(new Date(+c.date || +c.cycleId))), note: 'Old app · cycle ' + cs.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }), legacy: true, updatedAt: 1 };
+      seen[id] = 1;
+      if (seen[legacyKey(tr, 't')]) return;
+      seen[legacyKey(tr, 't')] = 1; d.transfers.push(tr); nTr++;
+    });
+    d.historyImported = Date.now();
+    return { incomes: nInc, transfers: nTr };
+  }
+
+  // Must stay deterministic: both phones normalize the same cloud data and compare the result.
+  function normalize(d) {
+    var defs = defaultPeople();
+    ['bills', 'incomes', 'transfers', 'checkins'].forEach(function (k) { if (!Array.isArray(d[k])) d[k] = []; });
+    if (!d.snapshots || typeof d.snapshots !== 'object') d.snapshots = {};
+    if (!d.dismissed || typeof d.dismissed !== 'object') d.dismissed = {};
+    if (!Array.isArray(d.people)) d.people = defs;
+    ['p1', 'p2'].forEach(function (id, i) {
+      var p = byId(d.people, id);
+      if (!p) { p = defs[i]; d.people.push(p); }
+      if (!p.pots) p.pots = p.dailyBudget != null ? potsFromDaily(p.dailyBudget, p.foodPct) : defs[i].pots;
+      for (var k in defs[i]) if (p[k] == null) p[k] = defs[i][k];
+      LEGACY_POTS.forEach(function (pt) { if (p.pots[pt] == null) p.pots[pt] = 0; });
+      if (!Array.isArray(p.pockets)) p.pockets = pocketsFromLegacy(p);
+      // the cloud copy sorts lists by id, so the order lives in "order"
+      p.pockets = p.pockets.filter(function (x) { return x && x.id; }).map(normalizePocket)
+        .sort(function (a, b) { return a.order - b.order || (a.id < b.id ? -1 : 1); });
+      p.pockets.forEach(function (x, j) { x.order = j; });
+      if (p.leftover !== 'main' && !byId(p.pockets, p.leftover)) p.leftover = byId(p.pockets, 'savings') ? 'savings' : 'main';
+      p.round = !!p.round;
+    });
+    var ds = defaultSettings();
+    if (!d.settings || typeof d.settings !== 'object') d.settings = ds;
+    for (var s in ds) if (d.settings[s] == null) d.settings[s] = ds[s];
+    if (!d.settings.startMonth) d.settings.startMonth = ym(today());
+    if (!d.local) d.local = { me: null };
+    d.version = 26; // unchanged on purpose: a different number would make old and new copies overwrite each other forever
+    return d;
+  }
+
+  var CACHE_KEY = 'fairshare_cache', LOCAL_KEY = 'fairshare_local', ME_KEY = 'fairshare_me';
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  function load(key) {
+    var d = null;
+    try { var ls = lsGet(key || CACHE_KEY); if (ls) d = JSON.parse(ls); } catch (e) { d = null; }
+    d = d ? normalize(d) : normalize(defaultData());
+    dedupeLegacy(d); cutover(d);
+    d.local = { me: lsGet(ME_KEY) };
+    return d;
+  }
+
+  /* ================= cloud sync (Firebase) ================= */
+  // The whole household lives in ONE Firestore document. Every save runs a transaction that
+  // first merges what's in the cloud (record by record, newest change wins), then writes the
+  // result. So two phones editing at the same time never overwrite each other.
+  var cloud = { fb: null, user: null, local: false, status: 'connecting', dirty: false, pushing: false, first: true, replace: false, retry: null, unsub: null, lastError: '' };
+
+  // Stable text form: object keys sorted, lists sorted by id. Used to compare local vs cloud.
+  function canon(x) {
+    if (Array.isArray(x)) {
+      var arr = x.map(canon);
+      if (x.length && x.every(function (i) { return i && typeof i === 'object' && i.id != null; }))
+        arr.sort(function (p, q) { return String(p.id) < String(q.id) ? -1 : 1; });
+      return arr;
+    }
+    if (x && typeof x === 'object') { var o = {}; Object.keys(x).sort().forEach(function (k) { if (x[k] !== undefined) o[k] = canon(x[k]); }); return o; }
+    return x;
+  }
+  function exportable(d) { var c = JSON.parse(JSON.stringify(d)); delete c.local; delete c._migrated; delete c._hist; return c; }
+  function cloudText(d) { return JSON.stringify(canon(exportable(d))); }
+  function cacheLocal() { lsSet(cloud.local ? LOCAL_KEY : CACHE_KEY, JSON.stringify(exportable(D))); }
+  function ready() { return cloud.local || (!!cloud.user && !cloud.first); }
+
+  function setStatus(st, err) {
+    cloud.status = st; if (err) cloud.lastError = err;
+    ['sync-status', 'sync-status2'].forEach(function (id) { var el = $(id); if (el) el.innerHTML = statusHtml(); });
+  }
+  function statusHtml() {
+    var m = { synced: ['var(--green)', 'Synced'], saving: ['var(--orange)', 'Saving…'], offline: ['var(--muted)', 'Offline, will sync'], error: ['var(--red)', 'Sync problem'], connecting: ['var(--muted)', 'Connecting…'], local: ['var(--orange)', 'This device only'] }[cloud.status] || ['var(--muted)', cloud.status];
+    return '<span class="dot" style="background:' + m[0] + '"></span>' + m[1];
+  }
+
+  var saveTimer = null;
+  function save() {
+    invalidate();
+    cacheLocal();
+    if (cloud.local) return;
+    cloud.dirty = true;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(push, 400);
+  }
+  function push() {
+    if (cloud.local || !cloud.fb || !cloud.user || cloud.first) return;   // not signed in / not loaded yet
+    if (cloud.pushing) { cloud.dirty = true; return; }
+    cloud.pushing = true; cloud.dirty = false; setStatus('saving');
+    var replace = cloud.replace, before = cloudText(D);
+    cloud.fb.transact(function (remoteText) {
+      if (remoteText && !replace) { try { mergeData(JSON.parse(remoteText)); } catch (e) {} }
+      return cloudText(D);
+    }).then(function () {
+      cloud.pushing = false; cloud.replace = false; cacheLocal();
+      setStatus('synced');
+      if (cloudText(D) !== before) softRender();
+      if (cloud.dirty) push();
+    }).catch(function (e) {
+      cloud.pushing = false; cloud.dirty = true;
+      var denied = e && /permission/i.test(e.code || e.message || '');
+      setStatus(!navigator.onLine ? 'offline' : 'error', denied ? 'This account is not allowed to use this household. Check the emails in the Firestore rules.' : (e && e.message) || 'Unknown error');
+      clearTimeout(cloud.retry); cloud.retry = setTimeout(push, denied ? 60000 : 8000);
+    });
+  }
+  function onRemote(remoteText) {
+    var remote = null;
+    try { remote = remoteText ? JSON.parse(remoteText) : null; } catch (e) { remote = null; }
+    if (cloud.first) {
+      cloud.first = false;
+      var hadCache = !!lsGet(CACHE_KEY);
+      if (remote) {
+        var me = D.local.me;
+        if (hadCache) mergeData(remote); else { D = normalize(remote); dedupeLegacy(D); D.local = { me: me }; }
+      }
+      invalidate(); cacheLocal(); hideLoading(); render();
+      if (!D.local.me) whoSheet();
+      if (!remote || cloudText(D) !== cloudText(normalize(remote))) push(); else setStatus('synced');
+      return;
+    }
+    if (!remote) return;
+    var before = cloudText(D);
+    mergeData(remote);
+    var after = cloudText(D);
+    cacheLocal();
+    if (after !== before) softRender();
+    if (after !== cloudText(normalize(JSON.parse(remoteText)))) save(); else if (!cloud.pushing) setStatus('synced');
+  }
+  // Re-draw without wiping what someone is typing.
+  var pendingRender = false;
+  function softRender() {
+    invalidate();
+    var a = document.activeElement;
+    if (a && $('view').contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) { pendingRender = true; return; }
+    render();
+  }
+
+  function cloudReady(fb) {
+    cloud.fb = fb;
+    fb.onAuth(function (user) {
+      if (cloud.unsub) { cloud.unsub(); cloud.unsub = null; }
+      cloud.user = user;
+      if (!user) { showLogin(); return; }
+      hideLogin(); showLoading(); cloud.first = true; setStatus('connecting');
+      cloud.unsub = fb.watch(function (text) { onRemote(text); }, function (e) {
+        var denied = e && /permission/i.test(e.code || e.message || '');
+        setStatus('error', denied ? 'This account (' + user.email + ') is not allowed to open this household. Check the two emails in the Firestore rules.' : (e && e.message) || 'Could not connect');
+        if (cloud.first) { hideLoading(); showFatal(cloud.lastError); }
+      });
+    });
+    window.addEventListener('online', function () { if (cloud.dirty || cloud.status !== 'synced') push(); });
+    window.addEventListener('offline', function () { setStatus('offline'); });
+  }
+  function cloudFailed(msg, canLocal) { showFatal(msg, canLocal); }
+  // Preview mode when config.js isn't filled in: everything works, nothing leaves this device.
+  function startLocal() {
+    cloud.local = true; cloud.first = false;
+    var me = lsGet(ME_KEY);
+    D = load(LOCAL_KEY); D.local = { me: me };
+    hideLogin(); hideLoading(); setStatus('local'); render();
+    if (!D.local.me) whoSheet();
+  }
+
+  /* ---- login / loading screens ---- */
+  function authErr(e) {
+    var c = (e && e.code) || '';
+    return {
+      'auth/invalid-email': 'That email address doesn\'t look right.',
+      'auth/missing-password': 'Enter your password.',
+      'auth/weak-password': 'Use at least 6 characters for the password.',
+      'auth/email-already-in-use': 'There is already an account with this email. Tap Sign in instead.',
+      'auth/invalid-credential': 'Wrong email or password.',
+      'auth/wrong-password': 'Wrong email or password.',
+      'auth/user-not-found': 'No account with this email yet. Tap Create account.',
+      'auth/too-many-requests': 'Too many tries. Wait a minute and try again.',
+      'auth/network-request-failed': 'No internet connection.',
+      'auth/operation-not-allowed': 'Email sign-in is not switched on in Firebase (Authentication → Sign-in method).',
+      'auth/admin-restricted-operation': 'New accounts are switched off in Firebase. Sign in with an existing account.'
+    }[c] || (e && e.message) || 'Something went wrong.';
+  }
+  function showLogin(mode) {
+    mode = mode || 'in'; hideLoading();
+    var el = $('auth');
+    el.style.display = 'flex';
+    el.innerHTML = '<div class="auth-box"><h1>FairShare</h1><div class="sub" style="margin-bottom:22px">' + (mode === 'up' ? 'Create your account' : 'Sign in to your household') + '</div>' +
+      field('Email', '<input id="au-email" type="email" autocomplete="email" autocapitalize="none" inputmode="email" value="' + esc(lsGet('fairshare_email') || '') + '">') +
+      field('Password', '<input id="au-pass" type="password" autocomplete="' + (mode === 'up' ? 'new-password' : 'current-password') + '" onkeydown="if(event.key===\'Enter\')app.authGo(\'' + mode + '\')">') +
+      '<div id="au-err" class="small c-red" style="min-height:18px;margin:-4px 4px 10px"></div>' +
+      '<button class="btn" id="au-go" onclick="app.authGo(\'' + mode + '\')">' + (mode === 'up' ? 'Create account' : 'Sign in') + '</button>' +
+      '<div style="display:flex;justify-content:space-between;margin-top:16px">' +
+      (mode === 'up' ? '<button class="link" onclick="app.showLogin(\'in\')">I have an account</button>' : '<button class="link" onclick="app.showLogin(\'up\')">Create account</button>') +
+      '<button class="link" onclick="app.authReset()">Forgot password?</button></div></div>';
+  }
+  function hideLogin() { var el = $('auth'); el.style.display = 'none'; el.innerHTML = ''; }
+  function authGo(mode) {
+    var email = val('au-email').trim().toLowerCase(), pass = val('au-pass'), err = $('au-err'), btn = $('au-go');
+    if (!email) { err.textContent = 'Enter your email.'; return; }
+    lsSet('fairshare_email', email);
+    btn.disabled = true; err.textContent = '';
+    (mode === 'up' ? cloud.fb.signUp(email, pass) : cloud.fb.signIn(email, pass)).catch(function (e) {
+      err.textContent = authErr(e); btn.disabled = false;
+    });
+  }
+  function authReset() {
+    var email = val('au-email').trim().toLowerCase(), err = $('au-err');
+    if (!email) { err.textContent = 'Type your email first, then tap Forgot password.'; return; }
+    cloud.fb.reset(email).then(function () { err.style.color = 'var(--green)'; err.textContent = 'Reset email sent. Check your inbox (and spam).'; })
+      .catch(function (e) { err.textContent = authErr(e); });
+  }
+  function signOut() {
+    if (!confirmTwice('btn-signout', 'Tap again to sign out')) return;
+    if (cloud.local) { cloud.local = false; location.reload(); return; }
+    lsSet(CACHE_KEY, null);
+    cloud.fb.signOut().then(function () { D = normalize(defaultData()); D.local = { me: lsGet(ME_KEY) }; invalidate(); });
+  }
+  var confirmTimers = {};
+  function confirmTwice(id, text) {
+    var b = $(id); if (!b) return true;
+    if (b.getAttribute('data-armed')) return true;
+    var old = b.textContent; b.setAttribute('data-armed', '1'); b.textContent = text;
+    clearTimeout(confirmTimers[id]); confirmTimers[id] = setTimeout(function () { b.removeAttribute('data-armed'); b.textContent = old; }, 3000);
+    return false;
+  }
+  function showLoading() { $('loading').style.display = 'flex'; }
+  function hideLoading() { $('loading').style.display = 'none'; }
+  function showFatal(msg, canLocal) {
+    hideLogin(); hideLoading();
+    var el = $('auth'); el.style.display = 'flex';
+    el.innerHTML = '<div class="auth-box"><h1>FairShare</h1><div class="alert bad" style="margin-top:18px"><div class="ic">⚠️</div><div class="msg">' + esc(msg) + '</div></div>' +
+      '<button class="btn gray mt" onclick="location.reload()">Try again</button>' +
+      (canLocal ? '<button class="btn mt" onclick="app.startLocal()">Preview on this device only</button><div class="small mt">No login and no sync: data stays in this browser. Paste a backup code in Settings to see your real numbers.</div>' : '') +
+      (cloud.user ? '<button class="link mt" onclick="app.forceSignOut()">Sign out</button>' : '') + '</div>';
+  }
+
+  function copyText(text, msg) {
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+      try { document.execCommand('copy'); } catch (e) {}
+      ta.remove();
+    }
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(fallback); else fallback(); } catch (e) { fallback(); }
+    if (msg !== false) toast(msg || 'Copied');
+  }
+  // "529,10" on a phone set to Belgian/Dutch, "529.10" otherwise, so it pastes straight into Revolut.
+  function pasteAmount(n) {
+    var sep = (1.5).toLocaleString().indexOf(',') > -1 ? ',' : '.';
+    return r2(n).toFixed(2).replace('.', sep);
+  }
+  function copyAmt(n) { copyText(pasteAmount(n), 'Copied ' + money(n)); }
+
+  /* ================= people ================= */
+  function person(id) { return byId(D.people, id); }
+  function mgr() { return person('p1'); }
+  function ptr() { return person('p2'); }
+  function meId() { return (D.local && D.local.me) || 'p1'; }
+  function otherId(id) { return id === 'p1' ? 'p2' : 'p1'; }
+  function isManagerView() { return meId() !== 'p2'; }
+  function pColor(id) { return id === 'p1' ? P1C : P2C; }
+  function avatar(id, small) {
+    var p = person(id);
+    return '<div class="avatar' + (small ? ' sm' : '') + '" style="background:' + tint(pColor(id), 0.22) + ';color:' + pColor(id) + '">' + esc((p.name || '?').charAt(0).toUpperCase()) + '</div>';
+  }
+  function you(id) { return id === meId() ? 'You' : person(id).name; }
+  function yours(id) { return id === meId() ? 'your' : person(id).name + '\'s'; }
+
+  /* ================= memo ================= */
+  // Numbers are recalculated from scratch after every change; within one screen draw they're cached.
+  var memo = {};
+  function invalidate() { memo = {}; }
+
+  /* ================= bills ================= */
+  function activeBills() { return D.bills.filter(function (b) { return !b.deleted; }); }
+  function monthlyOf(b) { return (+b.amount || 0) / (+b.frequency || 1); }
+  function sharedMonthlyNow() { return sum(activeBills().filter(function (b) { return b.shared; }), monthlyOf); }
+  function personalMonthly(pid) { return sum(activeBills().filter(function (b) { return !b.shared && b.owner === pid; }), monthlyOf); }
+  function paidFrom(b) { return b.shared ? 'p1' : b.owner; }
+  function freqLabel(f) { return { 1: 'Monthly', 2: 'Every 2 months', 3: 'Quarterly', 6: 'Every 6 months', 12: 'Yearly' }[f] || ('Every ' + f + ' months'); }
+  function isDueMonth(b, m1) { var f = +b.frequency || 1; return ((m1 - (+b.dueMonth || 1)) % f + f) % f === 0; }
+  function dueMonthsLabel(b) {
+    var f = +b.frequency || 1; if (f === 1) return 'day ' + b.day;
+    var ms = [];
+    for (var m = 1; m <= 12; m++) if (isDueMonth(b, m)) ms.push(monthName('2000-' + pad(m), true));
+    return ms.join(', ') + ' · day ' + b.day;
+  }
+  function billDateIn(b, y, m0) { return new Date(y, m0, Math.min(+b.day || 1, dim(y, m0))); }
+  function billDates(b, ref) {
+    var f = +b.frequency || 1, out = [];
+    for (var y = ref.getFullYear() - 2; y <= ref.getFullYear() + 2; y++)
+      for (var m = 1; m <= 12; m++) if (isDueMonth(b, m)) out.push(billDateIn(b, y, m - 1));
+    out.sort(function (a, c) { return a - c; });
+    var i = 0; while (i < out.length && out[i] < ref) i++;
+    var next = out[Math.min(i, out.length - 1)];
+    var prev = out[i - 1] || new Date(next.getFullYear(), next.getMonth() - f, next.getDate());
+    return { prev: prev, next: next };
+  }
+
+  /* ================= income ================= */
+  function slotLabel(p, slot) { return p.payMode === 'dual' ? (slot === 'd1' ? 'Voorschot' : 'Rest of pay') : 'Salary'; }
+  function schedule(p, mk) {
+    if (p.payMode !== 'single' && p.payMode !== 'dual') return [];
+    var y = mkYear(mk), m0 = mkMonth0(mk), out = [];
+    var a = payDate(y, m0, p.day1, p.holidayShift);
+    out.push({ pid: p.id, slot: 'd1', date: a.date, moved: a.moved, amount: +p.amount1 || 0, label: slotLabel(p, 'd1') });
+    if (p.payMode === 'dual') {
+      var b = payDate(y, m0, p.day2, p.holidayShift);
+      out.push({ pid: p.id, slot: 'd2', date: b.date, moved: b.moved, amount: +p.amount2 || 0, label: slotLabel(p, 'd2') });
+    }
+    out.sort(function (x, z) { return x.date - z.date; });
+    return out;
+  }
+  // Which month's payday a logged payment fulfils (pay that arrives early can land in the month before).
+  function slotMkOf(i) { return i.slotMk || String(i.date).slice(0, 7); }
+  function slotTakenBy(pid, mk, slot) {
+    var r = D.incomes.filter(function (i) { return !i.deleted && i.personId === pid && i.slot === slot && slotMkOf(i) === mk; })[0];
+    return r ? r.id : null;
+  }
+  // All pay of one person in one calendar month: what landed + scheduled paydays not confirmed yet.
+  // Every payment counts in the month it lands.
+  function incomeFor(pid, mk) {
+    var key = 'inc:' + pid + ':' + mk;
+    if (memo[key]) return memo[key];
+    var p = person(pid), taken = {}, items = [];
+    D.incomes.forEach(function (i) {
+      if (i.deleted || i.personId !== pid) return;
+      if (i.slot && slotMkOf(i) === mk) taken[i.slot] = 1;
+      if (String(i.date).slice(0, 7) !== mk) return;
+      items.push({ key: i.id, id: i.id, pid: pid, mk: mk, slot: i.slot || null, date: parseYmd(i.date), amount: +i.amount || 0, label: i.note || (i.slot ? slotLabel(p, i.slot) : 'Extra income'), logged: true, rec: i });
+    });
+    var snap = D.snapshots[mk];
+    schedule(p, mk).forEach(function (s) {
+      if (taken[s.slot]) return;
+      var k = pid + ':' + s.slot;
+      if (snap && snap.expected && snap.expected[k] != null) s.amount = +snap.expected[k];
+      s.key = 'exp:' + pid + ':' + mk + ':' + s.slot; s.expected = true; s.mk = mk;
+      items.push(s);
+    });
+    items.sort(function (a, b) { return a.date - b.date || (a.logged === b.logged ? 0 : a.logged ? -1 : 1); });
+    var logged = items.filter(function (i) { return i.logged; }), expected = items.filter(function (i) { return i.expected; });
+    var lt = sum(logged, 'amount'), et = sum(expected, 'amount');
+    return (memo[key] = { items: items, logged: logged, expected: expected, loggedTotal: lt, expectedTotal: et, total: lt + et });
+  }
+  function split(mk) {
+    var key = 'split:' + mk;
+    if (memo[key]) return memo[key];
+    var a = incomeFor('p1', mk), b = incomeFor('p2', mk), t = a.total + b.total;
+    return (memo[key] = t <= 0 ? { p1: 0.5, p2: 0.5, a: a, b: b, total: 0, fallback: true } : { p1: a.total / t, p2: b.total / t, a: a, b: b, total: t });
+  }
+  function payItems(pid, from, to) {
+    var out = [];
+    for (var mk = from; mk <= to; mk = mkAdd(mk, 1)) out = out.concat(incomeFor(pid, mk).items);
+    return out;
+  }
+  function payItemsAround(pid) { var c = currentMk(); return payItems(pid, mkAdd(c, -1), mkAdd(c, 1)); }
+  function nextPayday(pid, from) {
+    for (var o = 0; o <= 2; o++) {
+      var its = incomeFor(pid, mkAdd(ym(from), o)).items.filter(function (i) { return i.date > from; });
+      if (its.length) return its[0];
+    }
+    return null;
+  }
+  function findItem(key) {
+    if (!key) return null;
+    if (key.indexOf('exp:') === 0) {
+      var p = key.split(':');
+      return incomeFor(p[1], p[2]).items.filter(function (i) { return i.key === key; })[0] || null;
+    }
+    var r = byId(D.incomes, key);
+    if (!r || r.deleted) return null;
+    return incomeFor(r.personId, String(r.date).slice(0, 7)).items.filter(function (i) { return i.key === key; })[0] || null;
+  }
+  function monthlyEstimate(pid, mk) {
+    mk = mk || currentMk();
+    var s = schedule(person(pid), mk);
+    if (s.length) return sum(s, 'amount');
+    var tot = 0, c = 0;
+    for (var i = 1; i <= 3; i++) { var l = incomeFor(pid, mkAdd(mk, -i)).loggedTotal; if (l > 0) { tot += l; c++; } }
+    if (c) return tot / c;
+    return incomeFor(pid, mk).loggedTotal;
+  }
+
+  /* ================= snapshots ================= */
+  function currentMk() { return ym(today()); }
+  function months() {
+    var out = [], mk = D.settings.startMonth, cur = currentMk(), guard = 0;
+    if (mk > cur) return [];
+    while (mk <= cur && guard++ < 120) { out.push(mk); mk = mkAdd(mk, 1); }
+    return out;
+  }
+  // When a month ends, its bill total and expected pay are frozen, so later edits don't rewrite history.
+  function makeSnapshot(mk) {
+    var exp = {};
+    ['p1', 'p2'].forEach(function (pid) { schedule(person(pid), mk).forEach(function (s) { exp[pid + ':' + s.slot] = s.amount; }); });
+    return { sharedTotal: r2(sharedMonthlyNow()), expected: exp, updatedAt: Date.now() };
+  }
+  function ensureSnapshots() {
+    var cur = currentMk(), changed = false;
+    months().forEach(function (mk) { if (mk < cur && !D.snapshots[mk]) { D.snapshots[mk] = makeSnapshot(mk); changed = true; } });
+    if (changed) save();
+  }
+  function sharedTotal(mk) { var s = D.snapshots[mk]; return s && mk < currentMk() ? +s.sharedTotal : sharedMonthlyNow(); }
+  function rateOf(mk) { var sp = split(mk); return sp.total > 0 ? sharedTotal(mk) / sp.total : 0; }
+
+  /* ================= what Sabrina sends, and when ================= */
+  // The fair rule: both people put the same % of every euro they earn toward the shared bills.
+  // That % = shared bills ÷ both incomes that month. So every time the partner gets paid,
+  // (that pay × that %) becomes due to the manager, on that payday. Over a month this adds
+  // up to exactly shared bills × the partner's share of income.
+  // "Once a month" mode: the whole month's part is due on one chosen payday instead.
+  function sendMode() { return D.settings.sendMode === 'monthly' && ptr().payMode !== 'irregular' ? 'monthly' : 'each'; }
+  function sendSlot() {
+    var s = D.settings.sendSlot, p = ptr();
+    if (p.payMode === 'single') return 'd1';
+    return s === 'd1' || s === 'd2' ? s : (+p.amount2 >= +p.amount1 ? 'd2' : 'd1');
+  }
+  function monthEvents(mk) {
+    var sp = split(mk), sh = sharedTotal(mk), out = [];
+    if (sh <= 0.004) return out;
+    if (sp.total <= 0) { // no income at all that month: fall back to 50/50 once the month is over
+      if (mk < currentMk()) out.push({ mk: mk, date: lastDayOf(mk), amount: r2(sh / 2), kind: 'even', src: null });
+      return out;
+    }
+    var rate = sh / sp.total, items = sp.b.items;
+    if (!items.length) return out; // the partner earned nothing: their share is 0
+    if (sendMode() === 'monthly') {
+      var anchor = items.filter(function (i) { return i.slot === sendSlot(); })[0] || items[items.length - 1];
+      out.push({ mk: mk, date: anchor.date, amount: r2(sh * sp.p2), kind: 'month', src: anchor, rate: rate });
+    } else {
+      items.forEach(function (i) { out.push({ mk: mk, date: i.date, amount: r2(i.amount * rate), kind: 'pay', src: i, rate: rate }); });
+    }
+    return out;
+  }
+  function activeTransfers() { return D.transfers.filter(function (t) { return !t.deleted; }); }
+  // Payments that count: made in this app, on or after the start month.
+  function countedTransfers() {
+    var startDay = D.settings.startMonth + '-01';
+    return activeTransfers().filter(function (t) { return !isLegacy(t) && String(t.date) >= startDay; });
+  }
+  function ledger() {
+    if (memo.ledger) return memo.ledger;
+    var t = today(), start = D.settings.startMonth, cur = currentMk(), end = mkAdd(cur, 2), evs = [], g = 0;
+    for (var mk = start; mk <= end && g++ < 150; mk = mkAdd(mk, 1)) evs = evs.concat(monthEvents(mk));
+    evs.sort(function (a, b) { return a.date - b.date; });
+    var tr = countedTransfers();
+    var paidIn = sum(tr.filter(function (x) { return x.from === 'p2'; }), 'amount');
+    var paidOut = sum(tr.filter(function (x) { return x.from === 'p1'; }), 'amount');
+    var net = paidIn - paidOut, opening = +D.settings.openingBalance || 0;
+    // Payments pay off the oldest amount first. A negative opening balance works like a payment.
+    var pool = net + (opening < 0 ? -opening : 0), openingPaid = 0;
+    if (opening > 0) { openingPaid = clamp(pool, 0, opening); pool -= openingPaid; }
+    evs.forEach(function (e) {
+      e.past = e.date <= t;
+      var a = clamp(pool, 0, e.amount);
+      e.paid = r2(a); e.left = r2(e.amount - a); pool -= a;
+    });
+    var owed = r2(opening + sum(evs.filter(function (e) { return e.past; }), 'amount') - net);
+    var rows = months().map(function (mk) {
+      var em = evs.filter(function (e) { return e.mk === mk; });
+      var past = em.filter(function (e) { return e.past; }), fut = em.filter(function (e) { return !e.past; });
+      return {
+        mk: mk, split: split(mk), shared: sharedTotal(mk), events: em, current: mk === cur,
+        charge: r2(sum(em, 'amount')), due: r2(sum(past, 'amount')), paid: r2(sum(em, 'paid')),
+        open: r2(sum(past, 'left')), future: r2(sum(fut, 'left'))
+      };
+    });
+    return (memo.ledger = {
+      events: evs, rows: rows, owed: owed, opening: opening, openingLeft: opening > 0 ? r2(opening - openingPaid) : 0,
+      paidIn: paidIn, paidOut: paidOut, net: net
+    });
+  }
+  function eventFor(key) { return ledger().events.filter(function (e) { return e.src && e.src.key === key; })[0] || null; }
+  // Everything still open before this event (FIFO), so "send now" clears it all.
+  function openBefore(ev) {
+    var L = ledger(), n = L.openingLeft;
+    for (var i = 0; i < L.events.length && L.events[i] !== ev; i++) if (L.events[i].date <= ev.date) n += L.events[i].left;
+    return r2(n);
+  }
+  function evLabel(e) {
+    if (e.kind === 'even') return monthOnly(e.mk) + ' (50/50)';
+    if (e.kind === 'month') return monthOnly(e.mk) + ' part';
+    return e.src.label + ' ' + dayLabel(e.date);
+  }
+
+  /* ================= Revolut split for one payment ================= */
+  // Order: shared bills (send / keep) → own bills → pockets top to bottom → leftover.
+  // Fixed pockets are € per month, spread over the paydays by size: a pay that is 83% of the
+  // usual monthly pay fills 83% of each fixed pocket. % pockets take a % of this pay.
+  function division(pid, amount, date, opts) {
+    opts = opts || {};
+    var p = person(pid), cfg = opts.cfg || p, mk = ym(date), sp = split(mk), sh = sharedTotal(mk);
+    var rate = sp.total > 0 ? sh / sp.total : 0, est = monthlyEstimate(pid, mk);
+    var frac = opts.month ? 1 : est > 0 ? Math.min(1, amount / est) : 1;
+    var bills = amount * rate, ev = null, anchor = null;
+    if (pid === 'p2' && !opts.month) {
+      ev = opts.key ? eventFor(opts.key) : null;
+      if (sendMode() === 'monthly') {
+        bills = ev ? ev.amount : 0;
+        if (!ev) anchor = ledger().events.filter(function (e) { return e.mk === mk && e.kind === 'month'; })[0] || null;
+      } else if (ev) bills = ev.amount;
+    }
+    bills = r2(Math.max(0, bills));
+    var own = r2(personalMonthly(pid) * frac), rest = amount - bills - own, shortfall = rest < -0.004 ? r2(-rest) : 0;
+    rest = Math.max(0, rest);
+    function cut(x) { return cfg.round ? Math.floor(x + 1e-6) : Math.floor(x * 100 + 1e-6) / 100; }
+    var pockets = {}, list = cfg.pockets.filter(function (k) { return (+k.value || 0) > 0 || k.id === cfg.leftover; });
+    list.forEach(function (k) {
+      var want = k.type === 'percent' ? amount * (+k.value || 0) / 100 : (+k.value || 0) * frac;
+      var give = Math.max(0, cut(Math.min(want, rest)));
+      rest -= give;
+      pockets[k.id] = { k: k, want: want, give: give, extra: 0, short: Math.max(0, cut(want) - give) }; // rounding isn't a shortfall
+    });
+    var to = cfg.leftover !== 'main' && pockets[cfg.leftover] ? cfg.leftover : 'main';
+    if (to !== 'main' && rest > 0) { var add = cut(rest); pockets[to].extra = add; pockets[to].give += add; rest -= add; }
+    var moved = sum(list, function (k) { return pockets[k.id].give; });
+    var keep = r2(Math.max(0, amount - bills - own - moved));
+    var lines = [];
+    if (pid === 'p2') { if (bills > 0.004) lines.push({ key: 'send', kind: 'send', name: 'Send to ' + mgr().name, icon: '💸', color: P1C, amount: bills }); }
+    else if (bills > 0.004) lines.push({ key: 'bills', kind: 'keep', name: 'Shared bills', icon: '🏠', color: P1C, amount: bills });
+    if (own > 0.004) lines.push({ key: 'own', kind: 'keep', name: 'Own bills', icon: '📄', color: '#8e8e93', amount: own });
+    list.forEach(function (k) {
+      var x = pockets[k.id];
+      if (x.give > 0.004 || x.short > 0.5) lines.push({ key: k.id, kind: 'move', name: k.name, icon: k.icon, color: k.color, amount: x.give, x: x, k: k });
+    });
+    if (keep > 0.004) lines.push({ key: 'main', kind: 'keep', name: to === 'main' ? 'Left over' : 'Small change', icon: '🏦', color: '#636366', amount: keep });
+    return {
+      pid: pid, amount: amount, date: date, mk: mk, rate: rate, frac: frac, est: est, share: sp[pid], bills: bills, own: own,
+      pockets: pockets, keep: keep, lines: lines, shortfall: shortfall, event: ev, anchor: anchor, leftTo: to,
+      next: opts.month ? null : nextPayday(pid, date)
+    };
+  }
+  function divDone(pid, it) {
+    if (!it.logged) return false;
+    var dv = division(pid, it.amount, it.date, { key: it.key }), ticks = it.rec.ticks || {};
+    var movesDone = dv.lines.every(function (l) { return l.kind !== 'move' || l.amount <= 0.004 || ticks[l.key]; });
+    return movesDone && (!dv.event || dv.event.left <= 0.005);
+  }
+
+  /* ================= main account ================= */
+  // What the manager's main account needs today: every bill it pays up to and including the next
+  // payday, plus the part already "built up" for quarterly/yearly bills.
+  function targetBalance() {
+    if (memo.target) return memo.target;
+    var t = today(), np = nextPayday('p1', t);
+    var npDate = np ? np.date : addDays(t, 30);
+    var rows = activeBills().filter(function (b) { return paidFrom(b) === 'p1'; }).map(function (b) {
+      var d = billDates(b, t), f = +b.frequency || 1;
+      if (d.next <= npDate) return { b: b, due: d.next, need: +b.amount, kind: 'due' };
+      if (f === 1) return { b: b, due: d.next, need: 0, kind: 'later' };
+      var total = daysBetween(d.prev, d.next), passed = daysBetween(d.prev, t);
+      var frac = total > 0 ? clamp(passed / total, 0, 1) : 0;
+      return { b: b, due: d.next, need: +b.amount * frac, frac: frac, kind: 'saving' };
+    });
+    rows.sort(function (a, b) { return a.due - b.due; });
+    return (memo.target = { rows: rows, total: r2(sum(rows, 'need')), nextPay: npDate });
+  }
+  function lastMain() { return checkinsOf('p1').filter(function (c) { return c.main != null && c.main !== ''; })[0] || null; }
+
+  /* ================= timeline ================= */
+  function timeline(days) {
+    var t = today(), end = addDays(t, days), ev = [];
+    for (var off = 0; off <= Math.ceil(days / 28) + 1; off++) {
+      var mk = mkAdd(ym(t), off), y = mkYear(mk), m0 = mkMonth0(mk);
+      activeBills().forEach(function (b) {
+        if (!isDueMonth(b, m0 + 1)) return;
+        var d = billDateIn(b, y, m0);
+        if (d >= t && d <= end) ev.push({ type: 'bill', date: d, b: b, o: 2 });
+      });
+      ['p1', 'p2'].forEach(function (pid) {
+        incomeFor(pid, mk).items.forEach(function (it) { if (it.date >= t && it.date <= end) ev.push({ type: 'pay', date: it.date, it: it, o: 0 }); });
+      });
+    }
+    ledger().events.forEach(function (e) { if (!e.past && e.date <= end && e.left > 0.005) ev.push({ type: 'send', date: e.date, e: e, o: 1 }); });
+    ev.sort(function (a, b) { return a.date - b.date || a.o - b.o; });
+    return ev;
+  }
+
+  /* ================= check-ins & advice ================= */
+  var LEGACY_CI = { food: 1, fun: 1, buffer: 1, savings: 1 };
+  function checkinsOf(pid) {
+    return D.checkins.filter(function (c) { return !c.deleted && c.personId === pid; })
+      .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.updatedAt || 0) - (a.updatedAt || 0); });
+  }
+  function ciVal(c, id) {
+    var v = c.bal && c.bal[id] != null ? c.bal[id] : LEGACY_CI[id] ? c[id] : null;
+    return v == null || v === '' || isNaN(+v) ? null : +v;
+  }
+  function ciBal(c) {
+    var b = {};
+    if (c.bal) Object.keys(c.bal).forEach(function (k) { if (c.bal[k] != null) b[k] = +c.bal[k]; });
+    Object.keys(LEGACY_CI).forEach(function (k) { if (b[k] == null && c[k] != null && c[k] !== '') b[k] = +c[k]; });
+    return b;
+  }
+  function hasPots(c) { return Object.keys(ciBal(c)).length > 0; }
+  function lastPotCheckin(pid) { return checkinsOf(pid).filter(hasPots)[0] || null; }
+  function spendPockets(p) { return p.pockets.filter(function (k) { return !k.save && +k.value > 0; }); }
+  function savePockets(p) { return p.pockets.filter(function (k) { return k.save; }); }
+  function monthlyPlan(pid, k, mk) { return k.type === 'percent' ? monthlyEstimate(pid, mk) * k.value / 100 : +k.value || 0; }
+  // How a pocket is doing: what's left (plus what still arrives this month) per day vs the plan per day.
+  function potStatus(pid, k, left, dateStr) {
+    if (left == null) return null;
+    var d = parseYmd(dateStr), mk = ym(d), T = monthlyPlan(pid, k, mk);
+    if (T <= 0) return null;
+    var n = dim(d.getFullYear(), d.getMonth()), daysLeft = n - d.getDate() + 1, pending = 0;
+    incomeFor(pid, mk).items.forEach(function (it) {
+      if (it.date > d) { var x = division(pid, it.amount, it.date, { key: it.key }).pockets[k.id]; if (x) pending += x.give; }
+    });
+    var avail = left + pending, perDay = avail / daysLeft, planDay = T / n, ratio = planDay > 0 ? perDay / planDay : 1;
+    var st = ratio >= 0.9 ? 'ok' : ratio >= 0.6 ? 'watch' : 'over';
+    return { k: k, left: left, pending: pending, avail: avail, perDay: perDay, planDay: planDay, daysLeft: daysLeft, status: st, ratio: ratio };
+  }
+  function potText(r) {
+    var base = money(r.left) + ' left' + (r.pending > 0.5 ? ' (+' + money(r.pending) + ' coming on payday)' : '') + ' for ' + r.daysLeft + ' days';
+    if (r.status === 'ok') return r.k.name + ': ' + base + '. About ' + money(r.perDay) + '/day. On track.';
+    if (r.status === 'watch') return r.k.name + ': getting tight. ' + base + ', so ' + money(r.perDay) + '/day instead of ' + money(r.planDay) + '/day.';
+    return r.k.name + ': over budget. ' + base + '. Try to stay under ' + money(Math.max(0, r.perDay)) + '/day until the end of the month.';
+  }
+  function evalCheckin(c) {
+    var p = person(c.personId), out = { pots: [], drops: [] };
+    spendPockets(p).forEach(function (k) { var r = potStatus(c.personId, k, ciVal(c, k.id), c.date); if (r) out.pots.push(r); });
+    savePockets(p).forEach(function (k) {
+      var v = ciVal(c, k.id); if (v == null) return;
+      var prev = checkinsOf(c.personId).filter(function (x) { return x.date < c.date && ciVal(x, k.id) != null; })[0];
+      if (prev && v < ciVal(prev, k.id) - 0.5) out.drops.push({ k: k, by: ciVal(prev, k.id) - v, since: prev.date });
+    });
+    return out;
+  }
+  function daysSince(dateStr) { return daysBetween(parseYmd(dateStr), today()); }
+
+  // All advice for a person, most important first. "top" ones sit above the balance on Home.
+  function advice(pid) {
+    var out = [], p = person(pid), mine = pid === meId(), t = today(), Yours = mine ? 'Your' : esc(p.name) + '\'s';
+    payItemsAround(pid).forEach(function (it) {
+      var ago = daysBetween(it.date, t);
+      if (it.expected && ago >= 0 && ago <= 7) {
+        out.push({ top: true, lvl: 'warn', ic: '💶', html: '<b>' + Yours + ' ' + esc(it.label.toLowerCase()) + ' was due ' + relDay(it.date) + '.</b> Did about ' + money(it.amount) + ' land?',
+          btns: [['Yes, it landed', "app.landed('" + it.key + "')", 'go'], ['Other amount', "app.confirmItem('" + it.key + "')"]] });
+      } else if (it.logged && ago >= 0 && ago <= 4 && !D.dismissed['plan:' + it.id] && !divDone(pid, it)) {
+        out.push({ top: true, lvl: 'info', ic: '🧩', key: 'plan:' + it.id, html: '<b>' + Yours + ' ' + money(it.amount) + ' landed.</b> ' + (mine ? 'Split it over your pockets in Revolut.' : 'See how it gets split.'),
+          btns: [['Show the split', "app.openPay('" + pid + "','" + it.key + "')", 'pri']] });
+      }
+    });
+    var cs = checkinsOf(pid).filter(hasPots), last = cs[0];
+    if (last && daysSince(last.date) <= 10) {
+      var ev = evalCheckin(last);
+      ev.pots.forEach(function (r) { if (r.status !== 'ok') out.push({ lvl: r.status === 'over' ? 'bad' : 'warn', ic: r.k.icon, html: esc(potText(r)) }); });
+      ev.drops.forEach(function (d) { out.push({ lvl: 'warn', ic: d.k.icon, html: '<b>' + esc(d.k.name) + ' went down ' + money(d.by) + '</b> since ' + dayLabel(parseYmd(d.since)) + '. Try to put it back next payday.' }); });
+    }
+    // patterns over the last 3 check-ins (within 5 weeks)
+    var recent3 = cs.filter(function (c) { return daysSince(c.date) <= 35; }).slice(0, 3);
+    if (recent3.length === 3) {
+      var evs = recent3.map(evalCheckin), spend = spendPockets(p), donor = spend[spend.length - 1];
+      spend.forEach(function (k) {
+        function every(test) { return evs.every(function (e) { return e.pots.some(function (r) { return r.k.id === k.id && test(r.status); }); }); }
+        if (k === donor && spend.length > 1) {
+          var fkey = 'tip:' + pid + ':' + k.id + ':' + recent3[0].date;
+          if (every(function (s) { return s !== 'ok'; }) && !D.dismissed[fkey])
+            out.push({ lvl: 'info', ic: '💡', key: fkey, html: '<b>' + esc(k.name) + ' keeps running out early.</b> Tip: don\'t move it all at once. Move about ' + money(monthlyPlan(pid, k, currentMk()) / 4.33) + ' into it every Monday instead.' });
+          return;
+        }
+        var key = 'raise:' + pid + ':' + k.id + ':' + recent3[0].date;
+        if (every(function (s) { return s === 'over'; }) && !D.dismissed[key]) {
+          var step = round5(monthlyPlan(pid, k, currentMk()) * 0.1), from = donor && donor !== k && k.type === 'fixed' && donor.type === 'fixed' && donor.value >= step ? donor : null;
+          out.push({ lvl: 'warn', ic: '💡', key: key, html: '<b>' + esc(k.name) + ' ran over 3 check-ins in a row.</b> The budget is probably too low. Raise it by ' + money(step) + (from ? ' and lower ' + esc(from.name) + ' by ' + money(step) : '') + '?',
+            btns: k.type === 'fixed' ? [['Apply', "app.applyRaise('" + pid + "','" + k.id + "'," + step + ",'" + (from ? from.id : '') + "','" + key + "')", 'pri']] : null });
+        }
+      });
+    }
+    var lastAny = checkinsOf(pid)[0];
+    if (!last || daysSince(last.date) >= 7) {
+      out.push({ lvl: 'info', ic: '🗓️', html: last ? 'It has been ' + daysSince(last.date) + ' days since ' + (mine ? 'your' : esc(p.name) + '\'s') + ' last check-in.' : 'Do a first weekly check-in so the app can tell you how your pockets are doing.', btns: [['Check in now', "app.go('checkin')", 'pri']] });
+    }
+    if (last && lastAny && !out.some(function (a) { return a.lvl === 'bad' || a.lvl === 'warn'; }) && daysSince(last.date) < 7) {
+      out.push({ lvl: 'good', ic: '✅', html: 'Everything on track at the last check-in. Nice.' });
+    }
+    return out;
+  }
+  function alertHtml(a) {
+    var acts = '';
+    if (a.btns || a.key) {
+      acts = '<div class="acts">' + (a.btns || []).map(function (b) { return '<button class="' + (b[2] || '') + '" onclick="' + b[1] + '">' + b[0] + '</button>'; }).join('') +
+        (a.key ? '<button onclick="app.dismiss(\'' + a.key + '\')">' + (a.btns && a.btns[0][0] === 'Apply' ? 'Ignore' : 'Hide') + '</button>' : '') + '</div>';
+    }
+    return '<div class="alert ' + (a.lvl === 'bad' ? 'bad' : a.lvl === 'warn' ? 'warn' : a.lvl === 'good' ? 'good' : '') + '"><div class="ic">' + a.ic + '</div><div class="msg">' + a.html + acts + '</div></div>';
+  }
+
+  /* ================= import / merge ================= */
+  function exportCode() {
+    return 'FAIRSHARE2:' + btoa(unescape(encodeURIComponent(JSON.stringify(exportable(D)))));
+  }
+  function decodeCode(text) {
+    text = String(text || '').trim().replace(/\s+/g, '');
+    if (text.indexOf('FAIRSHARE2:') === 0) return { v: 2, data: JSON.parse(decodeURIComponent(escape(atob(text.slice(11))))) };
+    var m = text.match(/^FAIRSHARE_(FULL|PARTNER):(.*)$/);
+    if (m) return { v: 1, data: JSON.parse(decodeURIComponent(atob(m[2]))) };
+    throw new Error('Not a FairShare code');
+  }
+  function mergeList(a, b) {
+    var map = {}, order = [];
+    a.forEach(function (x) { map[x.id] = x; order.push(x.id); });
+    (b || []).forEach(function (x) {
+      if (!x || !x.id) return;
+      var cur = map[x.id];
+      if (!cur) { map[x.id] = x; order.push(x.id); }
+      else if ((x.updatedAt || 0) > (cur.updatedAt || 0)) map[x.id] = x;
+    });
+    return order.map(function (id) { return map[id]; });
+  }
+  function mergeData(incoming) {
+    incoming = normalize(incoming);
+    ['bills', 'incomes', 'transfers', 'checkins', 'people'].forEach(function (k) { D[k] = mergeList(D[k], incoming[k]); });
+    Object.keys(incoming.snapshots).forEach(function (mk) {
+      var a = D.snapshots[mk], b = incoming.snapshots[mk];
+      if (!a || (b.updatedAt || 0) > (a.updatedAt || 0)) D.snapshots[mk] = b;
+    });
+    Object.keys(incoming.dismissed).forEach(function (k) { D.dismissed[k] = Math.max(D.dismissed[k] || 0, incoming.dismissed[k]); });
+    if ((incoming.settings.updatedAt || 0) > (D.settings.updatedAt || 0)) D.settings = incoming.settings;
+    if (incoming.cutoverDone && !D.cutoverDone) { D.cutoverDone = incoming.cutoverDone; if (!(D.settings.updatedAt > 0) && incoming.settings.startMonth > D.settings.startMonth) D.settings.startMonth = incoming.settings.startMonth; }
+    normalize(D); dedupeLegacy(D);
+    invalidate();
+  }
+
+  /* ================= UI plumbing ================= */
+  var TABS = ['home', 'payday', 'bills', 'checkin', 'settings'];
+  var tab = 'home', checkinFor = null, toastTimer = null, toastFn = null, renderedDay = null;
+  var payState = { pid: null, key: null, mk: null, view: 'pay' };
+  function toast(msg, action) {
+    var t = $('toast');
+    t.innerHTML = '<span>' + esc(msg) + '</span>' + (action ? '<button onclick="app._toastAct()">' + esc(action[0]) + '</button>' : '');
+    toastFn = action ? action[1] : null;
+    t.classList.toggle('act', !!action);
+    t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show', 'act'); toastFn = null; }, action ? 5000 : 2200);
+  }
+  function toastAct() { var f = toastFn; toastFn = null; $('toast').classList.remove('show', 'act'); if (f) f(); }
+  function openSheet(title, body) {
+    $('sheet').innerHTML = '<div class="sheet-head"><h2>' + esc(title) + '</h2><button class="x" onclick="app.closeSheet()" aria-label="Close">✕</button></div>' + body;
+    $('overlay').classList.add('open');
+    $('sheet').scrollTop = 0;
+  }
+  function closeSheet() { $('overlay').classList.remove('open'); $('sheet').innerHTML = ''; }
+  function seg(name, opts, value, onchange, cls) {
+    return '<div class="seg' + (cls ? ' ' + cls : '') + '" data-seg="' + name + '"' + (onchange ? ' data-onchange="' + onchange + '"' : '') + '>' + opts.map(function (o) {
+      return '<button type="button" class="' + (String(o[0]) === String(value) ? 'on' : '') + '" data-v="' + esc(o[0]) + '" onclick="app.segPick(this)">' + esc(o[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+  function segPick(btn) {
+    var p = btn.parentNode;
+    Array.prototype.forEach.call(p.querySelectorAll('button'), function (b) { b.classList.remove('on'); });
+    btn.classList.add('on');
+    var cb = p.getAttribute('data-onchange'); if (cb && api[cb]) api[cb](btn.getAttribute('data-v'));
+  }
+  function segVal(name) { var b = document.querySelector('[data-seg="' + name + '"] .on'); return b ? b.getAttribute('data-v') : null; }
+  function field(label, inner) { return '<div class="field"><label>' + label + '</label>' + inner + '</div>'; }
+  function moneyInput(id, v, cls) { return '<input id="' + id + '" class="' + (cls == null ? 'money' : cls) + '" inputmode="decimal" placeholder="0.00" value="' + (v == null || v === '' ? '' : esc(r2(v))) + '">'; }
+  function armDelete(btn, fn) {
+    if (btn.classList.contains('armed')) { fn(); return; }
+    btn.classList.add('armed'); btn.textContent = 'Tap again to delete';
+    setTimeout(function () { if (btn) { btn.classList.remove('armed'); btn.textContent = 'Delete'; } }, 3000);
+  }
+  function kv(k, v, cls) { return '<div class="kv"><span>' + k + '</span><b' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</b></div>'; }
+  function section(title, right) { return '<div class="section"><h3>' + title + '</h3>' + (right || '') + '</div>'; }
+
+  var ICONS = {
+    home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+    payday: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4M12 12H3"/></svg>',
+    bills: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3"/></svg>',
+    checkin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 10"/></svg>',
+    settings: '<svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>'
+  };
+  function renderTabs() {
+    var items = [['home', 'Home'], ['payday', 'Payday'], ['bills', 'Bills'], ['checkin', 'Check-in'], ['settings', 'Settings']];
+    var payBadge = payItemsAround(meId()).some(function (it) { var a = daysBetween(it.date, today()); return a >= 0 && a <= 4 && (it.expected || !divDone(meId(), it)); });
+    $('tabs').innerHTML = items.map(function (it) {
+      return '<button class="' + (tab === it[0] ? 'on' : '') + '" onclick="app.go(\'' + it[0] + '\')">' + ICONS[it[0]] + '<span>' + it[1] + '</span>' + (it[0] === 'payday' && payBadge ? '<i class="badge"></i>' : '') + '</button>';
+    }).join('');
+  }
+  function render() {
+    invalidate();
+    if (ready()) ensureSnapshots();
+    renderedDay = ymd(today());
+    renderTabs();
+    $('view').innerHTML = tab === 'payday' ? viewPayday() : tab === 'bills' ? viewBills() : tab === 'checkin' ? viewCheckin() : tab === 'settings' ? viewSettings() : viewHome();
+  }
+  function go(t) {
+    tab = TABS.indexOf(t) > -1 ? t : 'home'; closeSheet(); render(); window.scrollTo(0, 0);
+    try { history.replaceState(null, '', '#' + tab); } catch (e) {}
+  }
+
+  /* ================= HOME ================= */
+  function viewHome() {
+    var L = ledger(), me = meId(), mv = isManagerView();
+    var h = '<div class="top"><div><div class="sub">' + esc(today().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })) + '</div><h1>FairShare</h1></div>' +
+      '<div class="sub" style="text-align:right">' + esc(person(me).name) + '\'s phone<div id="sync-status" class="small" style="margin-top:3px">' + statusHtml() + '</div></div></div>';
+    var adv = advice(me);
+    h += adv.filter(function (a) { return a.top; }).map(alertHtml).join('');
+    h += balanceCard(L);
+    if (mv) h += mainCard(L);
+    var rest = adv.filter(function (a) { return !a.top; });
+    if (rest.length) h += section('For you') + rest.slice(0, 4).map(alertHtml).join('');
+    h += section('Next 5 weeks', '<button class="link" onclick="app.go(\'bills\')">All bills</button>') + timelineHtml(35);
+    h += splitCard(currentMk());
+    h += monthsList(L);
+    return h;
+  }
+
+  function balanceCard(L) {
+    var mv = isManagerView(), m = mgr(), s = ptr(), owed = L.owed;
+    var h = '<div class="card"><div class="hero-top"><div class="flow">' + avatar('p2', true) + '<span class="arr">→</span>' + avatar('p1', true) +
+      '<span class="label" style="margin-left:6px">' + (mv ? esc(s.name) + ' → you' : 'You → ' + esc(m.name)) + '</span></div>' +
+      '<button class="link sm" onclick="app.balanceSheet()">How? ›</button></div>';
+    if (D.settings.startMonth > currentMk())
+      return h + '<div class="hero-lbl">Not counting yet</div><div class="big">—</div><div class="small">Counting starts on 1 ' + monthName(D.settings.startMonth) + '. Change it in Settings → Tracking.</div></div>';
+    var open = L.events.filter(function (e) { return e.past && e.left > 0.005; });
+    if (owed > 0.005) {
+      var est = open.some(function (e) { return e.src && e.src.expected; });
+      var parts = open.map(function (e) { return esc(evLabel(e)) + ' <b>' + money(e.left) + '</b>'; });
+      if (L.openingLeft > 0.005) parts.unshift('Before ' + monthName(D.settings.startMonth, true) + ' <b>' + money(L.openingLeft) + '</b>');
+      if (L.paidOut > 0.005 && !parts.length) parts.push('Includes ' + money(L.paidOut) + ' ' + esc(m.name) + ' sent to ' + esc(s.name));
+      h += '<div class="hero-lbl">' + (mv ? esc(s.name) + ' owes you now' : 'Send ' + esc(m.name) + ' now') + '</div>' +
+        '<div class="big c-orange">' + (est ? '≈ ' : '') + money(owed) + '</div>' +
+        '<div class="small">' + (parts.length > 3 ? parts.slice(0, 2).join(' · ') + ' · +' + (parts.length - 2) + ' more' : parts.join(' · ')) + '</div>' +
+        (est ? '<div class="small c-orange" style="margin-top:4px">Uses the expected pay. Confirm the real amount for the exact number.</div>' : '');
+      h += mv ? '<div class="btns mt"><button class="btn go" onclick="app.quickSend(' + r2(owed) + ')">Mark as received</button><button class="btn gray" onclick="app.transferSheet()">Other amount</button></div>'
+        : '<div class="btns mt"><button class="btn go" onclick="app.quickSend(' + r2(owed) + ')">I sent it</button><button class="btn gray" onclick="app.payRevolut(' + r2(owed) + ')">' + (D.settings.revolutTag ? 'Open Revolut' : 'Copy amount') + '</button></div>';
+    } else if (owed < -0.005) {
+      h += '<div class="hero-lbl">' + (mv ? esc(s.name) + ' is ahead by' : 'You\'re ahead by') + '</div><div class="big c-green">' + money(-owed) + '</div>' +
+        '<div class="small">More was sent than needed so far. It comes off the next payment below.</div>';
+    } else {
+      h += '<div class="hero-lbl">Right now</div><div class="big c-green">All square ✓</div><div class="small">' + (mv ? 'Nothing open.' : 'Nothing to send right now.') + '</div>';
+    }
+    var nx = L.events.filter(function (e) { return !e.past && e.left > 0.005; }).slice(0, 3);
+    if (nx.length) {
+      h += '<div class="hr" style="margin:14px 0 8px"></div><div class="label">Coming up</div>';
+      nx.forEach(function (e) { h += nextRow(e, mv); });
+    }
+    if (owed <= 0.005) h += '<button class="btn gray sm mt" onclick="app.transferSheet()">Record a payment</button>';
+    return h + '</div>';
+  }
+  function nextRow(e, mv) {
+    var s = ptr(), what;
+    if (e.kind === 'month') what = (mv ? esc(s.name) + '\'s' : 'Your') + ' part of ' + monthOnly(e.mk) + ' · after the ' + esc(e.src.label.toLowerCase());
+    else what = 'After ' + (mv ? esc(s.name) + '\'s' : 'your') + ' ' + esc(e.src.label.toLowerCase());
+    if (e.paid > 0.005) what += ' · ' + money(e.paid) + ' already covered';
+    return '<div class="nx"><div class="nx-d"><div class="nx-day">' + e.date.getDate() + '</div><div class="nx-mon">' + monthName(ym(e.date), true) + '</div></div>' +
+      '<div class="grow"><div class="t">' + e.date.toLocaleDateString('en-GB', { weekday: 'long' }) + ' · ' + relDay(e.date) + '</div><div class="s">' + what + '</div></div>' +
+      '<div class="amt">' + (e.src && e.src.expected ? '≈ ' : '') + money(e.left) + '</div></div>';
+  }
+
+  function mainCard(L) {
+    var tb = targetBalance(), last = lastMain(), s = ptr();
+    var h = '<div class="card"><div class="hero-top"><div class="label">Main account</div><button class="link sm" onclick="app.targetSheet()">Details ›</button></div>';
+    h += '<div class="cols mt-s"><div><div class="small">Should have today</div><div class="mid">' + money(tb.total) + '</div></div>';
+    if (last) h += '<div style="text-align:right"><div class="small">You had on ' + dayLabel(parseYmd(last.date)) + '</div><div class="mid">' + money(+last.main) + '</div></div>';
+    h += '</div><div class="small mt-s">Every bill from your account up to your next pay (' + dayLong(tb.nextPay) + '), plus what to put aside for quarterly & yearly bills.</div>';
+    if (last) {
+      var gap = r2(+last.main - tb.total), old = daysSince(last.date);
+      if (gap >= 0) h += '<div class="state ok">✓ Covered, ' + money(gap) + ' spare</div>';
+      else if (L.owed > 0.005 && L.owed + gap >= 0) h += '<div class="state warn">' + money(-gap) + ' short until ' + esc(s.name) + ' sends ' + money(L.owed) + '</div>';
+      else h += '<div class="state bad">⚠️ ' + money(-gap) + ' short' + (L.owed > 0.005 ? ' (still ' + money(-gap - L.owed) + ' after ' + esc(s.name) + '\'s payment)' : '') + '</div>';
+      if (old > 7) h += '<div class="small mt-s">That balance is ' + old + ' days old.</div>';
+    }
+    return h + '<button class="btn gray sm mt" onclick="app.mainSheet()">Update balance</button></div>';
+  }
+
+  function timelineHtml(days) {
+    var ev = timeline(days), mv = isManagerView(), me = meId(), m = mgr(), s = ptr(), running = 0, lastDay = '', h = '<div class="list">';
+    var sp = split(currentMk());
+    ev = ev.filter(function (e) { return e.type !== 'bill' || e.b.shared || paidFrom(e.b) === me; });
+    if (!ev.length) return '<div class="list"><div class="empty">Nothing in the next ' + days + ' days.</div></div>';
+    ev.forEach(function (e) {
+      var dk = ymd(e.date);
+      if (dk !== lastDay) { h += '<div class="cal-day">' + dayLong(e.date) + '<span>' + relDay(e.date) + '</span></div>'; lastDay = dk; }
+      if (e.type === 'pay') {
+        var it = e.it, pid = it.pid;
+        h += '<div class="item tap" onclick="app.openPay(\'' + pid + '\',\'' + it.key + '\')">' + avatar(pid) + '<div class="grow"><div class="t">' + esc(you(pid)) + ' get' + (pid === me ? '' : 's') + ' paid</div>' +
+          '<div class="s">' + esc(it.label) + (it.moved ? ' · moved for weekend/holiday' : '') + (it.logged ? ' · landed ✓' : '') + '</div></div>' +
+          '<div class="amt c-green">' + (it.logged ? '+' : '≈ ') + money(it.amount) + '</div></div>';
+        return;
+      }
+      if (e.type === 'send') {
+        var ev1 = e.e;
+        h += '<div class="item tap" onclick="app.balanceSheet()"><div class="avatar" style="background:' + tint(P1C) + ';color:var(--blue)">⇄</div><div class="grow"><div class="t">' + (mv ? esc(s.name) + ' sends you' : 'You send ' + esc(m.name)) + '</div>' +
+          '<div class="s">' + (ev1.kind === 'month' ? 'Part of ' + monthOnly(ev1.mk) + '\'s shared bills' : pct1(ev1.rate) + ' of the ' + esc(ev1.src.label.toLowerCase())) + (ev1.paid > 0.005 ? ' · ' + money(ev1.paid) + ' covered' : '') + '</div></div>' +
+          '<div class="amt c-blue">' + (ev1.src && ev1.src.expected ? '≈ ' : '') + money(ev1.left) + '</div></div>';
+        return;
+      }
+      var b = e.b, from = paidFrom(b), by = workdayBefore(e.date), sub;
+      if (from === 'p1' && mv) running += +b.amount;
+      if (b.shared) {
+        sub = mv ? 'In your account by <b>' + dayLabel(by) + '</b>' : 'Paid by ' + esc(m.name);
+        sub += (+b.frequency || 1) === 1 ? ' · ' + (mv ? esc(s.name) + '\'s part ' : 'your part ') + money(b.amount * sp.p2) : ' · spread monthly';
+      } else sub = 'In your account by <b>' + dayLabel(by) + '</b>';
+      h += '<div class="item tap" onclick="app.billSheet(\'' + b.id + '\')"><div class="avatar" style="background:var(--card2);color:var(--muted)">€</div><div class="grow"><div class="t">' + esc(b.title) +
+        (b.shared ? '<span class="tag sh">shared</span>' : '<span class="tag">yours</span>') + '</div><div class="s">' + sub + '</div></div>' +
+        '<div style="text-align:right"><div class="amt c-red">−' + money(b.amount) + '</div>' + (mv && from === 'p1' ? '<div class="s">total ' + money(running) + '</div>' : '') + '</div></div>';
+    });
+    return h + '</div>' + (mv ? '<div class="small" style="padding:0 4px">"Total" adds up every bill leaving your account, so you can see how much has to be there by each date.</div>' : '');
+  }
+
+  function splitCard(mk) {
+    var sp = split(mk), sh = sharedTotal(mk), rate = sp.total > 0 ? sh / sp.total : 0;
+    var h = section(monthOnly(mk) + ' · shared bills', '<button class="link" onclick="app.monthSheet(\'' + mk + '\')">Details</button>') + '<div class="card">';
+    h += '<div class="bar"><div style="width:' + (sp.p1 * 100) + '%;background:var(--p1)"></div><div style="width:' + (sp.p2 * 100) + '%;background:var(--p2)"></div></div>';
+    [['p1', sp.a, sp.p1], ['p2', sp.b, sp.p2]].forEach(function (x) {
+      h += '<div class="kv"><span><span class="dot" style="background:' + pColor(x[0]) + '"></span>' + esc(person(x[0]).name) + ' pays ' + pct(x[2]) + '</span><b>' + money(sh * x[2]) + '</b></div>' +
+        '<div class="small" style="margin:-5px 0 4px 15px">earns ' + money(x[1].total) + (x[1].expectedTotal > 0 ? ' (' + money(x[1].expectedTotal) + ' still expected)' : '') + '</div>';
+    });
+    h += '<div class="hr"></div>' + kv('Shared bills this month', money(sh));
+    if (rate > 0) h += '<div class="small mt-s">The fair rule: you both put <b>' + pct1(rate) + '</b> of every euro you earn toward shared bills. So whoever earns more pays more.</div>';
+    else if (sp.fallback && sh > 0) h += '<div class="small mt-s">No pay known for this month yet, so it would be 50/50.</div>';
+    return h + '</div>';
+  }
+
+  function monthsList(L) {
+    var s = ptr(), h = section('By month') + '<div class="list">';
+    if (!L.rows.length) h += '<div class="empty">Counting starts in ' + monthName(D.settings.startMonth) + '.</div>';
+    L.rows.slice().reverse().forEach(function (r) {
+      var pill = r.open > 0.005 ? '<span class="pill due">' + money(r.open) + ' open</span>'
+        : r.future > 0.005 ? '<span class="pill exp">' + money(r.future) + ' to come</span>'
+        : r.charge > 0.004 ? '<span class="pill ok">Paid ✓</span>' : '<span class="pill exp">Nothing due</span>';
+      h += '<div class="item tap" onclick="app.monthSheet(\'' + r.mk + '\')"><div class="grow"><div class="t">' + monthName(r.mk) + (r.current ? ' <span class="c-muted" style="font-weight:400">· now</span>' : '') + '</div>' +
+        '<div class="s">' + esc(s.name) + ' ' + pct(r.split.p2) + ' of ' + money(r.shared) + ' = ' + money(r.charge) + '</div></div>' + pill + '</div>';
+    });
+    if (L.opening) h += '<div class="item"><div class="grow"><div class="t">Before ' + monthName(D.settings.startMonth) + '</div><div class="s">Opening balance ' + money(L.opening) + '</div></div>' +
+      (L.opening > 0 ? '<span class="pill ' + (L.openingLeft <= 0.005 ? 'ok">Paid ✓' : 'due">' + money(L.openingLeft) + ' open') + '</span>' : '') + '</div>';
+    return h + '</div>';
+  }
+
+  /* ================= PAYDAY (Revolut split) ================= */
+  function defaultItem(pid) {
+    var t = today(), items = payItemsAround(pid);
+    var past = items.filter(function (i) { return i.date <= t; }), fut = items.filter(function (i) { return i.date > t; });
+    var recent = past[past.length - 1];
+    if (recent && daysBetween(recent.date, t) <= 5 && (recent.expected || !divDone(pid, recent))) return recent;
+    return fut[0] || recent || null;
+  }
+  function viewPayday() {
+    var me = meId(), pid = payState.pid || me, p = person(pid);
+    var sel = findItem(payState.key);
+    if (!sel || sel.pid !== pid) sel = defaultItem(pid);
+    var h = '<div class="top"><div><h1>Payday</h1><div class="sub">Where every euro goes in Revolut</div></div><button class="link" onclick="app.divisionSheet(\'' + pid + '\')">Edit split</button></div>';
+    h += '<div style="margin-bottom:10px">' + seg('pay-who', [[me, person(me).name + ' (you)'], [otherId(me), person(otherId(me)).name]], pid, 'payWho') + '</div>';
+    h += '<div style="margin-bottom:14px">' + seg('pay-view', [['pay', 'One payday'], ['month', 'Whole month']], payState.view, 'payView', 'mini') + '</div>';
+    if (payState.view === 'month') h += monthDivisionCard(pid);
+    else if (sel) h += divisionCard(pid, sel);
+    else h += '<div class="card"><div class="empty">No pay scheduled. ' + (p.payMode === 'irregular' ? 'Add income when it lands.' : '') + '</div><button class="btn" onclick="app.incomeSheet(null,\'' + pid + '\')">+ Add income</button></div>';
+    var mk = payState.mk || (sel && payState.view === 'pay' ? ym(sel.date) : currentMk()), inc = incomeFor(pid, mk);
+    h += section('Pay in ' + monthName(mk) + ' · ' + money(inc.total), '<div class="mnav"><button onclick="app.payMonth(-1)" aria-label="Previous month">‹</button><button onclick="app.payMonth(1)" aria-label="Next month"' + (mk >= mkAdd(currentMk(), 1) ? ' disabled' : '') + '>›</button></div>');
+    h += '<div class="list">';
+    inc.items.forEach(function (it) { h += payRow(it, sel && payState.view === 'pay' ? sel.key : null); });
+    h += '<div class="item tap" onclick="app.incomeSheet(null,\'' + pid + '\',' + (mk !== currentMk() ? '{date:\'' + mk + '-' + pad(Math.min(28, today().getDate())) + '\'}' : 'null') + ')"><div class="avatar" style="background:var(--card2);color:var(--blue)">+</div><div class="grow"><div class="t c-blue">Add income</div><div class="s">Bonus, tips, or pay not on the schedule</div></div></div>';
+    h += '</div><div class="small" style="padding:0 4px">Tap a payday to see its split. "Expected" pay is an estimate until it\'s confirmed.</div>';
+    return h;
+  }
+  function payRow(it, selKey) {
+    var t = today(), st;
+    if (it.logged) st = divDone(it.pid, it) ? '<span class="pill ok">Split ✓</span>' : daysBetween(it.date, t) <= 14 ? '<span class="pill due">To split</span>' : '<span class="pill exp">Landed</span>';
+    else if (it.date <= t) st = '<span class="pill due">Confirm</span>';
+    else st = '<span class="pill exp">' + relDay(it.date) + '</span>';
+    return '<div class="item tap' + (it.key === selKey ? ' sel' : '') + '" onclick="app.pickPay(\'' + it.key + '\')"><div class="nx-d"><div class="nx-day">' + it.date.getDate() + '</div><div class="nx-mon">' + monthName(ym(it.date), true) + '</div></div>' +
+      '<div class="grow"><div class="t">' + esc(it.label) + '</div><div class="s">' + dayLong(it.date) + (it.moved ? ' · moved for weekend/holiday' : '') + (it.mk && it.rec && it.rec.slotMk && it.rec.slotMk !== ym(it.date) ? ' · for ' + monthName(it.rec.slotMk, true) : '') + '</div></div>' +
+      '<div style="text-align:right"><div class="amt' + (it.logged ? ' c-green' : ' c-muted') + '">' + (it.logged ? '' : '≈ ') + money(it.amount) + '</div><div style="margin-top:3px">' + st + '</div></div></div>';
+  }
+  var KIND_ORDER = { send: 0, move: 1, keep: 2 };
+  function barHtml(lines, amount) {
+    if (!(amount > 0)) return '';
+    return '<div class="dv-bar">' + lines.filter(function (l) { return l.amount > 0.004; }).sort(function (a, b) { return KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || lines.indexOf(a) - lines.indexOf(b); }).map(function (l) {
+      return '<i style="width:' + (l.amount / amount * 100) + '%;background:' + l.color + '" title="' + esc(l.name) + '"></i>';
+    }).join('') + '</div>';
+  }
+  function stepHead(n, text, right) { return '<div class="step"><span class="n">' + n + '</span>' + text + (right ? '<span class="r">' + right + '</span>' : '') + '</div>'; }
+  function lineHtml(l, sub, right, cls, copyVal) {
+    return '<div class="dv-line' + (cls ? ' ' + cls : '') + '"><div class="dv-ic" style="background:' + tint(l.color) + ';color:' + l.color + '">' + l.icon + '</div>' +
+      '<div class="grow"><div class="t">' + esc(l.name) + '</div>' + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>' +
+      '<button class="copy" onclick="app.copyAmt(' + r2(copyVal != null ? copyVal : l.amount) + ')" aria-label="Copy amount">' + money(l.amount) + '</button>' + (right || '') + '</div>';
+  }
+  function pocketSub(l, dv, month) {
+    var x = l.x, k = l.k, parts = [];
+    if (k.type === 'percent') parts.push(k.value + '% of ' + (month ? 'pay' : 'this pay'));
+    else parts.push(!month && dv.frac < 0.995 ? pct(dv.frac) + ' of ' + money0(k.value) + '/mo' : money0(k.value) + ' a month');
+    if (x.extra > 0.004) parts.push('+ ' + money0(x.extra) + ' left over');
+    if (!k.save && k.type === 'fixed' && dv.next && x.give > 0.004) {
+      var days = Math.max(1, daysBetween(dv.date, dv.next.date));
+      if (days >= 10 && x.give / (days / 7) >= 10) parts.push('≈' + money0(Math.round(x.give / (days / 7))) + '/week till ' + dayLabel(dv.next.date));
+    }
+    var s = parts.join(' · ');
+    if (x.short > 0.5) s += '<br><span class="c-orange">' + money(x.short) + ' less than planned</span>';
+    return s;
+  }
+  function keepSub(l, dv) {
+    if (l.key === 'bills') return 'Your part: ' + pct1(dv.rate) + ' of ' + (dv.frac === 1 && !dv.next ? 'pay' : 'this pay');
+    if (l.key === 'own') return 'Bills only ' + (dv.pid === meId() ? 'you pay' : person(dv.pid).name + ' pays');
+    return dv.leftTo === 'main' ? 'Everything left after the pockets' : 'Cents from rounding the pockets';
+  }
+  function divisionCard(pid, it) {
+    var p = person(pid), t = today(), mine = pid === meId(), m = mgr();
+    var dv = division(pid, it.amount, it.date, { key: it.key }), ticks = it.logged ? (it.rec.ticks || {}) : {};
+    var h = '<div class="card"><div class="dv-head"><div class="grow"><div class="label">' + esc(it.label) + ' · ' + dayLong(it.date) + '</div>' +
+      '<div class="big">' + (it.logged ? '' : '≈ ') + money(it.amount) + '</div></div>' +
+      (it.logged ? '<button class="link sm" onclick="app.incomeSheet(\'' + it.id + '\')">Edit</button>' : '') + '</div>';
+    if (!it.logged && it.date <= t) {
+      h += '<div class="banner warn">' + (mine ? 'Did' : 'Did ' + esc(p.name) + '\'s') + ' ≈' + money(it.amount) + ' land? Confirm it to get the exact split.' +
+        '<div class="btns"><button class="btn sm go" onclick="app.landed(\'' + it.key + '\')">Yes, it landed</button><button class="btn sm gray" onclick="app.confirmItem(\'' + it.key + '\')">Other amount</button></div></div>';
+    } else if (!it.logged) {
+      h += '<div class="banner">Preview: expected ' + relDay(it.date) + (it.moved ? ' (moved for weekend/holiday)' : '') + '. <button class="link sm" style="padding:0" onclick="app.confirmItem(\'' + it.key + '\')">Arrived early?</button></div>';
+    } else if (it.logged && it.date > t) {
+      h += '<div class="banner">Dated ' + relDay(it.date) + '.</div>';
+    }
+    h += barHtml(dv.lines, it.amount);
+    var n = 0;
+    if (pid === 'p2') {
+      var send = dv.lines.filter(function (l) { return l.kind === 'send'; })[0], ev = dv.event;
+      if (send) {
+        h += stepHead(++n, mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you');
+        var paid = ev && ev.left <= 0.005, before = ev ? openBefore(ev) : 0, toSend = ev ? r2(before + ev.left) : send.amount, sub;
+        if (!ev) sub = 'Before counting started, not tracked';
+        else if (paid) sub = '<span class="c-green">✓ ' + (mine ? 'Sent' : 'Received') + '</span>';
+        else if (ev.paid > 0.005) sub = money(ev.paid) + ' already covered, ' + money(ev.left) + ' left';
+        else sub = pct1(dv.rate) + ' of ' + (ev.kind === 'month' ? 'all pay this month' : 'this pay') + ' · ' + (mine ? 'your' : 'the') + ' part of the shared bills';
+        if (ev && !paid && before > 0.005) sub += '<br><span class="c-orange">+ ' + money(before) + ' still open from before → ' + money(toSend) + ' in total</span>';
+        h += '<div class="send">' + lineHtml({ name: mine ? 'Send to ' + m.name : 'From ' + p.name, icon: '💸', color: P1C, amount: send.amount }, sub, paid ? '<span class="tick on" aria-label="Done">✓</span>' : '', '', toSend);
+        if (ev && !paid && it.date <= t) {
+          h += mine ? '<div class="btns"><button class="btn sm go" onclick="app.quickSend(' + toSend + ')">Mark ' + money(toSend) + ' as sent</button><button class="btn sm gray" onclick="app.payRevolut(' + toSend + ')">' + (D.settings.revolutTag ? 'Open Revolut' : 'Copy amount') + '</button></div>'
+            : '<div class="btns"><button class="btn sm go" onclick="app.quickSend(' + toSend + ')">Received ' + money(toSend) + '</button><button class="btn sm gray" onclick="app.transferSheet()">Other amount</button></div>';
+        } else if (ev && !paid) h += '<div class="small" style="padding-left:50px">Due on payday.</div>';
+        h += '</div>';
+      } else if (sendMode() === 'monthly' && dv.anchor) {
+        h += '<div class="banner">Nothing to send from this pay. ' + (mine ? 'Your' : esc(p.name) + '\'s') + ' part of the month (' + money(dv.anchor.amount) + ') is sent from the ' + esc(dv.anchor.src.label.toLowerCase()) + ' on ' + dayLabel(dv.anchor.date) + '.</div>';
+      }
+    }
+    var moves = dv.lines.filter(function (l) { return l.kind === 'move'; });
+    if (moves.length) {
+      var done = moves.filter(function (l) { return ticks[l.key]; }).length;
+      h += stepHead(++n, 'Move to pockets', it.logged ? (done === moves.length ? '<span class="c-green">All done ✓</span>' : done + ' of ' + moves.length + ' done') : '');
+      moves.forEach(function (l, i) {
+        var on = !!ticks[l.key];
+        h += lineHtml(l, pocketSub(l, dv, false), it.logged && l.amount > 0.004 ? '<button class="tick' + (on ? ' on' : '') + '" onclick="app.tick(\'' + it.id + '\',\'' + l.key + '\')" aria-label="Mark ' + esc(l.name) + ' as moved">✓</button>' : '', (on ? 'done' : '') + (i === moves.length - 1 ? ' last' : ''));
+      });
+    }
+    var keeps = dv.lines.filter(function (l) { return l.kind === 'keep'; });
+    if (keeps.length) {
+      h += stepHead(++n, 'Leave in main account', money(sum(keeps, 'amount')));
+      keeps.forEach(function (l, i) { h += lineHtml(l, keepSub(l, dv), '', i === keeps.length - 1 ? 'last' : ''); });
+    }
+    if (pid === 'p1' && Math.abs(daysBetween(it.date, t)) <= 31) {
+      var L = ledger(), nx = L.events.filter(function (e) { return !e.past && e.left > 0.005; })[0], parts = [];
+      if (L.owed > 0.005) parts.push(money(L.owed) + ' that is open now');
+      if (nx) parts.push((nx.src && nx.src.expected ? '≈' : '') + money(nx.left) + ' on ' + dayLabel(nx.date));
+      if (parts.length) h += '<div class="banner">➕ ' + esc(ptr().name) + ' also sends ' + parts.join(', then ') + ' into your main account for the shared bills.</div>';
+    }
+    if (dv.shortfall > 0.5) h += '<div class="state bad">⚠️ This pay doesn\'t cover the bills part: ' + money(dv.shortfall) + ' short.</div>';
+    h += '<div class="small mt">This pay is ' + pct(dv.frac) + ' of ' + (mine ? 'your' : esc(p.name) + '\'s') + ' usual ' + money(dv.est) + ' a month, so fixed pockets get ' + pct(dv.frac) + ' of their monthly amount. Tap any amount to copy it for Revolut.</div>';
+    return h + '</div>';
+  }
+  function monthDivisionCard(pid) {
+    var p = person(pid), mk = currentMk(), est = monthlyEstimate(pid, mk), mine = pid === meId(), m = mgr();
+    if (!(est > 0)) return '<div class="card"><div class="empty">No usual pay known yet for ' + esc(p.name) + '.</div></div>';
+    var dv = division(pid, est, parseYmd(mk + '-15'), { month: true });
+    var h = '<div class="card"><div class="label">A normal month · ' + esc(payText(p)) + '</div><div class="big">≈ ' + money(est) + '</div>';
+    h += barHtml(dv.lines, est);
+    var shown = dv.lines.slice().sort(function (a, b) { return KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || dv.lines.indexOf(a) - dv.lines.indexOf(b); });
+    shown.forEach(function (l, i) {
+      var sub = l.kind === 'move' ? pocketSub(l, dv, true) : l.kind === 'send' ? pct1(dv.rate) + ' of pay · ' + (sendMode() === 'monthly' ? 'all at once on one payday' : 'a part on every payday') : keepSub(l, dv);
+      var name = l.kind === 'send' && !mine ? 'From ' + p.name : l.name;
+      h += lineHtml({ name: name, icon: l.icon, color: l.color, amount: l.amount }, sub, '', i === shown.length - 1 ? 'last' : '');
+    });
+    if (dv.shortfall > 0.5) h += '<div class="state bad">⚠️ The usual pay doesn\'t cover the bills: ' + money(dv.shortfall) + ' short.</div>';
+    return h + '<div class="small mt">Shared bills are ' + money(sharedTotal(mk)) + ' this month. Change pockets and order with Edit split.</div></div>';
+  }
+
+  /* ================= BILLS ================= */
+  function viewBills() {
+    var bills = activeBills().slice().sort(function (a, b) { return a.day - b.day; });
+    var sp = split(currentMk()), total = sharedMonthlyNow(), me = meId(), t = today();
+    var h = '<div class="top"><div><h1>Bills</h1><div class="sub">Shared bills are paid from ' + esc(mgr().name) + '\'s account.</div></div><button class="link" onclick="app.billSheet()">+ Add</button></div>';
+    h += '<div class="card">' + kv('Shared bills per month', money(total)) +
+      kv('<span class="dot" style="background:var(--p2)"></span>' + esc(ptr().name) + ' (' + pct(sp.p2) + ' this month)', money(total * sp.p2)) +
+      kv('<span class="dot" style="background:var(--p1)"></span>' + esc(mgr().name) + ' (' + pct(sp.p1) + ')', money(total * sp.p1)) +
+      '<div class="hr"></div>' +
+      kv(esc(mgr().name) + '\'s own bills', money(personalMonthly('p1'))) +
+      kv(esc(ptr().name) + '\'s own bills', money(personalMonthly('p2'))) +
+      '<div class="small mt-s">Quarterly and yearly bills are spread per month, so nobody gets a sudden big month.</div></div>';
+    function group(title, list, sharedGroup) {
+      if (!list.length) return '';
+      var out = section(title) + '<div class="list">';
+      list.forEach(function (b) {
+        var f = +b.frequency || 1, nd = billDates(b, t).next;
+        out += '<div class="item tap" onclick="app.billSheet(\'' + b.id + '\')"><div class="grow"><div class="t">' + esc(b.title) + '</div>' +
+          '<div class="s">' + freqLabel(f) + ' · ' + esc(dueMonthsLabel(b)) + (f > 1 ? ' · ' + money(b.amount) + ' each' : '') + '</div><div class="s">Next ' + dayLong(nd) + ' · ' + relDay(nd) + '</div></div>' +
+          '<div style="text-align:right"><div class="amt">' + money(monthlyOf(b)) + '<span class="c-muted" style="font-weight:400">/mo</span></div>' +
+          (sharedGroup ? '<div class="s">' + esc(ptr().name) + ' ' + money(monthlyOf(b) * sp.p2) + '</div>' : '') + '</div></div>';
+      });
+      return out + '</div>';
+    }
+    h += group('Shared', bills.filter(function (b) { return b.shared; }), true);
+    h += group(me === 'p1' ? 'Only yours' : 'Only ' + esc(mgr().name), bills.filter(function (b) { return !b.shared && b.owner === 'p1'; }), false);
+    h += group(me === 'p2' ? 'Only yours' : 'Only ' + esc(ptr().name), bills.filter(function (b) { return !b.shared && b.owner === 'p2'; }), false);
+    if (!bills.length) h += '<div class="list"><div class="empty">No bills yet. Tap + Add.</div></div>';
+    return h;
+  }
+
+  /* ================= CHECK-IN ================= */
+  function viewCheckin() {
+    var me = meId(), pid = checkinFor || me, p = person(pid), cs = checkinsOf(pid), last = lastPotCheckin(pid);
+    var h = '<div class="top"><div><h1>Check-in</h1><div class="sub">Once a week: what\'s left in each pocket?</div></div></div>';
+    h += '<div style="margin-bottom:14px">' + seg('ci-who', [[me, person(me).name + ' (you)'], [otherId(me), person(otherId(me)).name]], pid, 'checkinWho') + '</div>';
+    h += '<div class="card">' + (last ? '<div class="small" style="margin-bottom:12px">Last check-in: ' + dayLabel(parseYmd(last.date)) + ' (' + relDay(parseYmd(last.date)) + ')</div>' : '');
+    spendPockets(p).forEach(function (k) {
+      h += field(esc(k.icon + ' ' + k.name) + ': what\'s left? <span style="text-transform:none;font-weight:400">(plan ' + money(monthlyPlan(pid, k, currentMk())) + '/month)</span>', moneyInput('ci-' + k.id, '', ''));
+    });
+    savePockets(p).forEach(function (k) { h += field(esc(k.icon + ' ' + k.name) + ' balance', moneyInput('ci-' + k.id, '', '')); });
+    if (pid === 'p1') h += field('🏦 Main account balance', moneyInput('ci-main', '', ''));
+    h += '<button class="btn" onclick="app.saveCheckin(\'' + pid + '\')">Check in</button>' +
+      '<div class="small mt">Leave a field empty if you don\'t know it. Look at the pocket balances in the Revolut app.</div></div>';
+    if (last) {
+      var ev = evalCheckin(last);
+      h += section('How ' + (pid === me ? 'you\'re' : esc(p.name) + ' is') + ' doing') + '<div class="card" style="padding:4px 18px">';
+      ev.pots.forEach(function (r) {
+        h += '<div class="potrow"><div class="grow"><div class="t">' + esc(r.k.icon + ' ' + r.k.name) + '</div><div class="s">' + money(r.avail) + ' for ' + r.daysLeft + ' days · ' + money(r.perDay) + '/day (plan ' + money(r.planDay) + ')</div></div>' +
+          '<span class="status ' + r.status + '">' + { ok: 'On track', watch: 'Tight', over: 'Over' }[r.status] + '</span></div>';
+      });
+      savePockets(p).forEach(function (k) {
+        var v = ciVal(last, k.id); if (v == null) return;
+        var drop = ev.drops.filter(function (d) { return d.k.id === k.id; })[0];
+        h += '<div class="potrow"><div class="grow"><div class="t">' + esc(k.icon + ' ' + k.name) + '</div><div class="s">' + (drop ? '<span class="c-orange">Down ' + money(drop.by) + ' since last time</span>' : 'Not down since last time') + '</div></div><b>' + money(v) + '</b></div>';
+      });
+      if (!ev.pots.length && !savePockets(p).some(function (k) { return ciVal(last, k.id) != null; })) h += '<div class="potrow"><div class="s">No pocket amounts in the last check-in.</div></div>';
+      h += '</div>';
+      var adv = advice(pid).filter(function (a) { return a.ic === '💡'; });
+      if (adv.length) h += adv.map(alertHtml).join('');
+    }
+    if (cs.length) {
+      h += section('History') + '<div class="list">';
+      cs.slice(0, 10).forEach(function (c) {
+        var b = ciBal(c), parts = p.pockets.filter(function (k) { return b[k.id] != null; }).map(function (k) { return k.name + ' ' + money(b[k.id]); });
+        Object.keys(b).forEach(function (id) { if (!byId(p.pockets, id)) parts.push(id + ' ' + money(b[id])); });
+        if (c.main != null && c.main !== '') parts.push('Main ' + money(+c.main));
+        h += '<div class="item tap" onclick="app.delCheckinSheet(\'' + c.id + '\')"><div class="grow"><div class="t">' + dayLong(parseYmd(c.date)) + '</div><div class="s">' + esc(parts.join(' · ') || 'Empty') + '</div></div></div>';
+      });
+      h += '</div>';
+    }
+    return h;
+  }
+  function numOrNull(id) { var v = parseEuro(val(id)); return isNaN(v) ? null : r2(v); }
+  // One check-in per person per day: later entries the same day fill in / overwrite fields.
+  function upsertCheckin(pid, bal, main) {
+    var d = ymd(today()), c = D.checkins.filter(function (x) { return !x.deleted && x.personId === pid && x.date === d; })[0];
+    if (!c) { c = { id: uid('c'), personId: pid, date: d, bal: {} }; D.checkins.push(c); }
+    var b = ciBal(c);
+    Object.keys(bal || {}).forEach(function (k) { b[k] = bal[k]; });
+    c.bal = b;
+    Object.keys(LEGACY_CI).forEach(function (k) { delete c[k]; });
+    if (main != null) c.main = main;
+    c.updatedAt = Date.now();
+    return c;
+  }
+  function saveCheckin(pid) {
+    var p = person(pid), bal = {}, main = pid === 'p1' ? numOrNull('ci-main') : null;
+    spendPockets(p).concat(savePockets(p)).forEach(function (k) { var v = numOrNull('ci-' + k.id); if (v != null) bal[k.id] = v; });
+    if (!Object.keys(bal).length && main == null) return toast('Fill in at least one amount');
+    var c = upsertCheckin(pid, bal, main);
+    save(); render(); window.scrollTo(0, 0);
+    var ev = evalCheckin(c), body = '';
+    ev.pots.forEach(function (r) { body += alertHtml({ lvl: r.status === 'ok' ? 'good' : r.status === 'watch' ? 'warn' : 'bad', ic: r.k.icon, html: esc(potText(r)) }); });
+    ev.drops.forEach(function (d) { body += alertHtml({ lvl: 'warn', ic: d.k.icon, html: '<b>' + esc(d.k.name) + ' went down ' + money(d.by) + '</b> since ' + dayLabel(parseYmd(d.since)) + '.' }); });
+    if (pid === 'p1' && main != null) {
+      var tb = targetBalance(), gap = main - tb.total;
+      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: 'Main account covers everything until ' + dayLabel(tb.nextPay) + ' (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>Main account is ' + money(-gap) + ' short</b> for the bills up to ' + dayLabel(tb.nextPay) + '.' });
+    }
+    advice(pid).filter(function (a) { return a.ic === '💡'; }).forEach(function (a) { body += alertHtml(a); });
+    openSheet('Check-in done', (body || '<div class="small">Saved.</div>') + '<button class="btn gray mt" onclick="app.closeSheet()">OK</button>');
+  }
+  function delCheckinSheet(id) {
+    openSheet('Check-in', '<div class="small" style="margin-bottom:12px">Delete this check-in?</div><button class="btn del" onclick="app.delCheckin(this,\'' + id + '\')">Delete</button>');
+  }
+  function delCheckin(btn, id) {
+    armDelete(btn, function () { var c = byId(D.checkins, id); if (c) { c.deleted = true; c.updatedAt = Date.now(); } save(); closeSheet(); render(); });
+  }
+  function applyRaise(pid, kid, step, fromId, key) {
+    var p = person(pid), k = byId(p.pockets, kid), from = fromId ? byId(p.pockets, fromId) : null;
+    if (k) k.value = r2(k.value + step);
+    if (from && from.value >= step) from.value = r2(from.value - step);
+    mirrorLegacy(p); p.updatedAt = Date.now(); D.dismissed[key] = Date.now();
+    save(); closeSheet(); render(); toast('Split updated');
+  }
+  function dismiss(key) { D.dismissed[key] = Date.now(); save(); render(); }
+
+  /* ================= SETTINGS ================= */
+  function payText(p) {
+    return p.payMode === 'irregular' ? 'Irregular income' : p.payMode === 'dual' ? '≈' + money(+p.amount1) + ' on the ' + ord(p.day1) + ' + ≈' + money(+p.amount2) + ' on the ' + ord(p.day2) : '≈' + money(+p.amount1) + ' on the ' + ord(p.day1);
+  }
+  function splitText(p) {
+    var parts = p.pockets.filter(function (k) { return k.value > 0; }).map(function (k) { return k.name + ' ' + (k.type === 'percent' ? k.value + '%' : money0(k.value)); });
+    var to = byId(p.pockets, p.leftover);
+    return (parts.join(' · ') || 'No pockets') + ' · rest → ' + (to ? to.name : 'main');
+  }
+  function sendExplain() {
+    var s = ptr(), mk = currentMk(), rate = rateOf(mk), sch = schedule(s, mk);
+    if (s.payMode === 'irregular') return 'Each time ' + esc(s.name) + '\'s income is added, ' + pct1(rate) + ' of it becomes due.';
+    if (sendMode() === 'monthly') {
+      var a = sch.filter(function (x) { return x.slot === sendSlot(); })[0] || sch[sch.length - 1];
+      return 'The whole month\'s part (≈' + money(sharedTotal(mk) * split(mk).p2) + ' now) is due when the ' + esc(a.label.toLowerCase()) + ' lands on the ' + ord(a.date.getDate()) + '. Smaller paydays stay untouched.';
+    }
+    return 'Every time ' + esc(s.name) + ' gets paid, ' + pct1(rate) + ' of it goes to ' + esc(mgr().name) + ': ' + sch.map(function (x) { return '≈' + money(x.amount * rate) + ' on the ' + ord(x.date.getDate()); }).join(' and ') + '.';
+  }
+  function viewSettings() {
+    var m = mgr(), s = ptr(), st = D.settings;
+    var h = '<div class="top"><div><h1>Settings</h1></div></div>';
+    h += '<div class="section" style="margin-top:0"><h3>This phone belongs to</h3></div><div class="card" style="padding:12px">' + seg('me', [['p1', m.name], ['p2', s.name]], meId(), 'setMe') + '</div>';
+    h += section('Pay & Revolut split') + '<div class="list">';
+    [m, s].forEach(function (p) {
+      h += '<div class="item tap" onclick="app.paySheet(\'' + p.id + '\')">' + avatar(p.id) + '<div class="grow"><div class="t">' + esc(p.name) + '\'s pay' + (p.role === 'manager' ? ' <span class="c-muted" style="font-weight:400">· pays the shared bills</span>' : '') + '</div><div class="s">' + esc(payText(p)) + '</div></div><span class="chev">›</span></div>';
+      h += '<div class="item tap" onclick="app.divisionSheet(\'' + p.id + '\')"><div class="avatar" style="background:var(--card2)">🧩</div><div class="grow"><div class="t">' + esc(p.name) + '\'s split</div><div class="s">' + esc(splitText(p)) + '</div></div><span class="chev">›</span></div>';
+    });
+    h += '</div>';
+    h += section('When ' + esc(s.name) + ' sends money') + '<div class="card">' +
+      (s.payMode === 'irregular' ? '' : seg('send-mode', [['each', 'Every payday'], ['monthly', 'Once a month']], sendMode(), 'setSendMode')) +
+      (sendMode() === 'monthly' && s.payMode === 'dual' ? '<div class="mt-s">' + seg('send-slot', schedule(s, currentMk()).map(function (x) { return [x.slot, 'On the ' + x.label.toLowerCase()]; }), sendSlot(), 'setSendSlot', 'mini') + '</div>' : '') +
+      '<div class="small mt">' + sendExplain() + ' Either way the total per month is the same.</div>' +
+      '<div class="hr" style="margin:14px 0"></div>' +
+      field(esc(m.name) + '\'s Revolut username (optional)', '<div class="row-in" style="display:flex;gap:8px"><input id="set-tag" placeholder="e.g. daniil" autocapitalize="none" autocorrect="off" value="' + esc(st.revolutTag || '') + '"><button class="btn gray sm" style="width:auto;padding:0 16px" onclick="app.saveTag()">Save</button></div>') +
+      '<div class="small" style="margin:-6px 4px 0">Gives ' + esc(s.name) + ' an "Open Revolut" button (revolut.me link) with the amount already copied.</div></div>';
+    h += section('Tracking') + '<div class="card">' +
+      field('Start counting from', '<input type="month" id="set-start" value="' + esc(st.startMonth) + '">') +
+      field('What ' + esc(s.name) + ' owed before that (€)', '<input id="set-open" inputmode="decimal" value="' + esc(r2(+st.openingBalance || 0)) + '">') +
+      '<div class="small" style="margin:-4px 4px 12px">Use a minus if ' + esc(m.name) + ' owed ' + esc(s.name) + '.</div>' +
+      '<button class="btn gray" onclick="app.saveTracking()">Save</button></div>';
+    h += section('Account & sync') + '<div class="card">' +
+      kv('Signed in as', esc(cloud.local ? 'Preview (no account)' : cloud.user ? cloud.user.email : '–')) +
+      '<div class="kv"><span>Status</span><b id="sync-status2">' + statusHtml() + '</b></div>' +
+      (cloud.status === 'error' && cloud.lastError ? '<div class="small c-red" style="margin:4px 0 8px">' + esc(cloud.lastError) + '</div>' : '') +
+      '<div class="small" style="margin:6px 0 12px">' + (cloud.local ? 'Preview mode: data stays in this browser only.' : 'Everything syncs by itself between both phones.') + '</div>' +
+      '<button class="btn gray" id="btn-signout" onclick="app.signOut()">' + (cloud.local ? 'Leave preview' : 'Sign out') + '</button></div>';
+    var oldInc = D.incomes.filter(function (i) { return !i.deleted && isLegacy(i); }), oldTr = D.transfers.filter(function (t) { return !t.deleted && isLegacy(t); });
+    h += section('Backup & old app') + '<details><summary>Backup codes & import</summary><div class="inner">' +
+      '<button class="btn gray" onclick="app.copySync()">Copy a backup code</button>' +
+      '<div class="small mt" style="margin-bottom:10px">To restore or bring data over (also from the old Scriptable app: Settings → <b>Copy sync code</b>), paste a code here.</div>' +
+      '<textarea id="sync-in" rows="3" placeholder="Paste a code here…"></textarea>' +
+      '<div class="btns mt"><button class="btn gray" onclick="app.pasteSync()">Paste</button><button class="btn go" onclick="app.importSync(false)">Merge</button></div>' +
+      '<button class="btn del mt" id="btn-replace" onclick="app.importSync(true)">Replace everything</button>' +
+      (oldInc.length || oldTr.length ? '<div class="hr" style="margin:16px 0 8px"></div>' + kv('Old app deposits', oldInc.length) + kv('Old app payments', oldTr.length) +
+        '<div class="small">Old deposits show in the Payday tab (go back with ‹). Old settlements are history only and don\'t change the balance.</div>' : '') +
+      '</div></details>';
+    h += '<button class="btn gray" onclick="app.copySummary()">Copy a summary to share</button>';
+    h += '<div class="small" style="text-align:center;margin-top:18px">FairShare · remastered 2026</div>';
+    return h;
+  }
+
+  /* ================= sheets ================= */
+  var incForm = null;
+  function incomeSheet(id, pid, preset) {
+    var i = id ? byId(D.incomes, id) : null;
+    pid = i ? i.personId : (pid || meId());
+    var date = i ? i.date : preset && preset.date ? preset.date : ymd(today());
+    incForm = { id: id || '', pid: pid, picked: false, slotSel: i ? (i.slot ? slotMkOf(i) + '|' + i.slot : '') : preset && preset.slot ? preset.mk + '|' + preset.slot : null };
+    var body = field('Who got paid', seg('inc-who', [[meId(), person(meId()).name], [otherId(meId()), person(otherId(meId())).name]], pid, 'incFormChanged')) +
+      field('Amount that landed', moneyInput('inc-amt', i ? i.amount : preset && preset.amount != null ? preset.amount : '')) +
+      (preset && preset.amount != null ? '<div class="small" style="margin:-6px 4px 14px">Filled in with the usual amount. Change it if it was different this time.</div>' : '') +
+      field('Date it landed', '<input type="date" id="inc-date" value="' + esc(date) + '" onchange="app.incFormChanged()">') +
+      field('Which payday is this?', '<select id="inc-slot" onchange="app.incSlotPicked()"></select>') +
+      '<div class="small" style="margin:-6px 4px 14px">Linking it to the payday replaces the expected amount, so nothing is counted twice.</div>' +
+      field('Note (optional)', '<input id="inc-note" placeholder="e.g. Bonus, tips" value="' + esc(i ? i.note : '') + '">') +
+      '<button class="btn go" onclick="app.saveIncome(\'' + (id || '') + '\')">' + (i ? 'Save' : 'Add & show split') + '</button>' +
+      (i ? '<button class="btn del mt" onclick="app.delIncome(this,\'' + id + '\')">Delete</button>' : '');
+    openSheet(i ? 'Edit pay' : preset && preset.label ? 'Confirm ' + preset.label.toLowerCase() : 'Add income', body);
+    fillSlotOptions();
+  }
+  function fillSlotOptions() {
+    var sel = $('inc-slot'); if (!sel || !incForm) return;
+    var pid = segVal('inc-who') || incForm.pid, dv = val('inc-date'), d = dv ? parseYmd(dv) : today(), mk = ym(d), opts = [];
+    [-1, 0, 1].forEach(function (o) {
+      var m = mkAdd(mk, o);
+      schedule(person(pid), m).forEach(function (s) {
+        var taken = slotTakenBy(pid, m, s.slot);
+        if (taken && taken !== incForm.id) return;
+        opts.push({ v: m + '|' + s.slot, label: s.label + ' · ' + dayLabel(s.date), diff: Math.abs(daysBetween(s.date, d)) });
+      });
+    });
+    var cur = incForm.slotSel;
+    if (cur == null || (cur !== '' && !opts.some(function (o) { return o.v === cur; }))) {
+      var best = opts.filter(function (o) { return o.diff <= 10; }).sort(function (a, b) { return a.diff - b.diff; })[0];
+      cur = best ? best.v : '';
+    }
+    sel.innerHTML = opts.map(function (o) { return '<option value="' + o.v + '"' + (o.v === cur ? ' selected' : '') + '>' + esc(o.label) + '</option>'; }).join('') +
+      '<option value=""' + (cur === '' ? ' selected' : '') + '>Extra income (not a payday)</option>';
+  }
+  function incFormChanged() { if (!incForm) return; incForm.slotSel = incForm.picked ? val('inc-slot') : incForm.id ? incForm.slotSel : null; fillSlotOptions(); }
+  function incSlotPicked() { if (!incForm) return; incForm.picked = true; incForm.slotSel = val('inc-slot'); }
+  function saveIncome(id) {
+    var amt = parseEuro(val('inc-amt')), date = val('inc-date'), who = segVal('inc-who') || incForm.pid, sv = val('inc-slot');
+    if (!(amt > 0)) return toast('Enter an amount');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return toast('Pick a date');
+    var slot = sv ? sv.split('|')[1] : null, slotMk = sv ? sv.split('|')[0] : null;
+    var rec = id ? byId(D.incomes, id) : null;
+    if (rec) { rec.personId = who; rec.amount = r2(amt); rec.date = date; rec.note = val('inc-note').trim(); rec.slot = slot; rec.slotMk = slotMk; rec.updatedAt = Date.now(); }
+    else { rec = { id: uid('i'), personId: who, amount: r2(amt), date: date, note: val('inc-note').trim(), slot: slot, slotMk: slotMk, updatedAt: Date.now() }; D.incomes.push(rec); }
+    save();
+    if (!id) openPay(who, rec.id); else { closeSheet(); render(); toast('Saved'); }
+  }
+  function delIncome(btn, id) {
+    armDelete(btn, function () { var r = byId(D.incomes, id); if (r) { r.deleted = true; r.updatedAt = Date.now(); } if (payState.key === id) payState.key = null; save(); closeSheet(); render(); toast('Deleted'); });
+  }
+  // "Yes, it landed": log the expected amount in one tap.
+  function landed(key) {
+    var it = findItem(key); if (!it || it.logged) return;
+    var t = today(), rec = { id: uid('i'), personId: it.pid, amount: r2(it.amount), date: ymd(it.date <= t ? it.date : t), note: '', slot: it.slot, slotMk: it.mk, updatedAt: Date.now() };
+    D.incomes.push(rec); save();
+    openPay(it.pid, rec.id);
+    toast('Logged ' + money(rec.amount), ['Undo', function () { rec.deleted = true; rec.updatedAt = Date.now(); payState.key = null; save(); render(); }]);
+  }
+  function confirmItem(key) {
+    var it = findItem(key); if (!it) return;
+    var t = today();
+    incomeSheet(null, it.pid, { amount: it.amount, date: ymd(it.date <= t ? it.date : t), slot: it.slot, mk: it.mk, label: it.label });
+  }
+  function openPay(pid, key) {
+    var it = findItem(key);
+    payState = { pid: pid, key: key, mk: it ? ym(it.date) : null, view: 'pay' };
+    go('payday');
+  }
+  function pickPay(key) {
+    payState.key = key; payState.view = 'pay';
+    render();
+    var c = document.querySelector('#view .card'); if (c) window.scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + window.scrollY - 20), behavior: 'smooth' });
+  }
+  function tick(id, key) {
+    var r = byId(D.incomes, id); if (!r) return;
+    var t = {}; Object.keys(r.ticks || {}).forEach(function (k) { t[k] = r.ticks[k]; });
+    if (t[key]) delete t[key]; else t[key] = 1;
+    r.ticks = t; r.updatedAt = Date.now();
+    save(); render();
+  }
+
+  function quickSend(amount) {
+    if (!(amount > 0)) return;
+    var mine = meId() === 'p2', rec = { id: uid('t'), from: 'p2', amount: r2(amount), date: ymd(today()), note: '', updatedAt: Date.now() };
+    D.transfers.push(rec); save(); render();
+    toast((mine ? 'Marked as sent: ' : 'Received: ') + money(amount), ['Undo', function () { rec.deleted = true; rec.updatedAt = Date.now(); save(); render(); }]);
+  }
+  function payRevolut(amount) {
+    var tag = String(D.settings.revolutTag || '').replace(/^@/, '').trim();
+    copyText(pasteAmount(amount), tag ? false : 'Copied ' + money(amount));
+    if (tag) { toast('Copied ' + money(amount) + '. Paste it in Revolut.'); window.open('https://revolut.me/' + encodeURIComponent(tag), '_blank'); }
+  }
+  function transferSheet(id, preset) {
+    var t = id ? byId(D.transfers, id) : null, L = ledger();
+    var from = t ? t.from : preset && preset.from ? preset.from : (L.owed < -0.005 ? 'p1' : 'p2');
+    var suggested = t ? t.amount : preset && preset.amount != null ? preset.amount : Math.abs(L.owed) > 0.005 ? Math.abs(L.owed) : '';
+    var body = field('Direction', seg('tr-from', [['p2', ptr().name + ' → ' + mgr().name], ['p1', mgr().name + ' → ' + ptr().name]], from)) +
+      field('Amount', moneyInput('tr-amt', suggested)) +
+      (!t && L.owed > 0.005 ? '<div class="small" style="margin:-6px 4px 14px">Open right now: ' + money(L.owed) + '. Partial payments are fine.</div>' : '') +
+      field('Date', '<input type="date" id="tr-date" value="' + esc(t ? t.date : ymd(today())) + '">') +
+      field('Note (optional)', '<input id="tr-note" value="' + esc(t ? t.note : '') + '">') +
+      '<button class="btn go" onclick="app.saveTransfer(\'' + (id || '') + '\')">' + (t ? 'Save' : 'Record payment') + '</button>' +
+      (t ? '<button class="btn del mt" onclick="app.delTransfer(this,\'' + id + '\')">Delete</button>' : '');
+    openSheet(t ? 'Edit payment' : 'Record payment', body);
+  }
+  function saveTransfer(id) {
+    var amt = parseEuro(val('tr-amt')), date = val('tr-date'), from = segVal('tr-from');
+    if (!(amt > 0)) return toast('Enter an amount');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = ymd(today());
+    var rec = id ? byId(D.transfers, id) : null;
+    if (rec) { rec.from = from; rec.amount = r2(amt); rec.date = date; rec.note = val('tr-note').trim(); rec.updatedAt = Date.now(); }
+    else D.transfers.push({ id: uid('t'), from: from, amount: r2(amt), date: date, note: val('tr-note').trim(), updatedAt: Date.now() });
+    save(); closeSheet(); render(); toast(rec ? 'Saved' : 'Payment recorded');
+  }
+  function delTransfer(btn, id) {
+    armDelete(btn, function () { var r = byId(D.transfers, id); if (r) { r.deleted = true; r.updatedAt = Date.now(); } save(); closeSheet(); render(); toast('Deleted'); });
+  }
+
+  function billSheet(id) {
+    var b = id ? byId(D.bills, id) : null, f = b ? +b.frequency || 1 : 1;
+    var type = b ? (b.shared ? 'shared' : b.owner) : 'shared', monthOpts = '';
+    for (var m = 1; m <= 12; m++) monthOpts += '<option value="' + m + '"' + ((b ? +b.dueMonth : today().getMonth() + 1) === m ? ' selected' : '') + '>' + monthOnly('2000-' + pad(m)) + '</option>';
+    var freqs = [['1', 'Monthly'], ['2', '2 mo'], ['3', 'Quarter'], ['6', '6 mo'], ['12', 'Yearly']];
+    if (!freqs.some(function (x) { return +x[0] === f; })) freqs.push([String(f), f + ' mo']);
+    var body = field('Name', '<input id="bill-title" placeholder="e.g. Rent, Spotify" value="' + esc(b ? b.title : '') + '">') +
+      field('Whose is it?', seg('bill-type', [['shared', 'Shared'], ['p1', mgr().name], ['p2', ptr().name]], type)) +
+      '<div class="btns">' + field('Amount each time', moneyInput('bill-amt', b ? b.amount : '')) + '<div style="flex:0 0 90px">' + field('Day', '<input id="bill-day" inputmode="numeric" value="' + esc(b ? b.day : 1) + '">') + '</div></div>' +
+      field('How often', seg('bill-freq', freqs, String(f), 'billFreqChanged', 'mini')) +
+      '<div id="bill-month-wrap" style="' + (f === 1 ? 'display:none' : '') + '">' + field('A month it is due', '<select id="bill-month">' + monthOpts + '</select>') + '</div>' +
+      '<div class="small" style="margin:-4px 4px 14px">Shared bills come out of ' + esc(mgr().name) + '\'s account. The app reminds you to have the money there the working day before.</div>' +
+      '<button class="btn" onclick="app.saveBill(\'' + (id || '') + '\')">Save bill</button>' +
+      (b ? '<button class="btn del mt" onclick="app.delBill(this,\'' + id + '\')">Delete</button>' : '');
+    openSheet(b ? 'Edit bill' : 'New bill', body);
+  }
+  function billFreqChanged(v) { $('bill-month-wrap').style.display = v === '1' ? 'none' : ''; }
+  function saveBill(id) {
+    var title = val('bill-title').trim(), amt = parseEuro(val('bill-amt')), day = parseInt(val('bill-day'), 10);
+    var f = parseInt(segVal('bill-freq'), 10) || 1, type = segVal('bill-type') || 'shared';
+    if (!title) return toast('Give it a name');
+    if (!(amt >= 0)) return toast('Enter an amount');
+    if (!(day >= 1 && day <= 31)) return toast('Day must be 1–31');
+    var data = { title: title, amount: r2(amt), day: day, frequency: f, dueMonth: f === 1 ? 1 : parseInt(val('bill-month'), 10) || 1, shared: type === 'shared', owner: type === 'shared' ? 'p1' : type, updatedAt: Date.now() };
+    var rec = id ? byId(D.bills, id) : null;
+    if (rec) Object.keys(data).forEach(function (k) { rec[k] = data[k]; });
+    else { data.id = uid('b'); D.bills.push(data); }
+    save(); closeSheet(); render(); toast('Bill saved');
+  }
+  function delBill(btn, id) {
+    armDelete(btn, function () { var r = byId(D.bills, id); if (r) { r.deleted = true; r.updatedAt = Date.now(); } save(); closeSheet(); render(); toast('Deleted'); });
+  }
+
+  function paySheet(pid) {
+    var p = person(pid);
+    var body = field('Name', '<input id="ps-name" value="' + esc(p.name) + '">') +
+      field('How pay arrives', seg('ps-mode', [['dual', 'Voorschot + rest'], ['single', 'Once a month'], ['irregular', 'Random']], p.payMode, 'personModeChanged')) +
+      '<div id="ps-fixed" style="' + (p.payMode === 'irregular' ? 'display:none' : '') + '">' +
+      '<div class="btns"><div style="flex:0 0 90px">' + field('Day', '<input id="ps-d1" inputmode="numeric" value="' + esc(p.day1) + '">') + '</div>' + field('<span id="ps-a1l">' + (p.payMode === 'dual' ? 'Voorschot (about)' : 'Amount (about)') + '</span>', moneyInput('ps-a1', p.amount1, '')) + '</div>' +
+      '<div id="ps-dual" style="' + (p.payMode === 'dual' ? '' : 'display:none') + '">' +
+      '<div class="btns"><div style="flex:0 0 90px">' + field('Day', '<input id="ps-d2" inputmode="numeric" value="' + esc(p.day2) + '">') + '</div>' + field('Rest of pay (about)', moneyInput('ps-a2', p.amount2, '')) + '</div></div>' +
+      '<div class="small" style="margin:-4px 4px 14px">The day of the month each payment usually lands. Amounts are estimates: you confirm the real amount when it arrives.</div>' +
+      '<label class="toggle field"><div><div style="font-weight:500">Earlier if weekend/holiday</div><div class="small">Uses Belgian public holidays</div></div><input type="checkbox" id="ps-hol"' + (p.holidayShift ? ' checked' : '') + '></label></div>' +
+      '<button class="btn" onclick="app.savePay(\'' + pid + '\')">Save</button>' +
+      '<button class="btn gray mt" onclick="app.divisionSheet(\'' + pid + '\')">Edit ' + esc(p.name) + '\'s Revolut split ›</button>';
+    openSheet(p.name + '\'s pay', body);
+  }
+  function personModeChanged(v) {
+    $('ps-fixed').style.display = v === 'irregular' ? 'none' : '';
+    $('ps-dual').style.display = v === 'dual' ? '' : 'none';
+    $('ps-a1l').textContent = v === 'dual' ? 'Voorschot (about)' : 'Amount (about)';
+  }
+  function savePay(pid) {
+    var p = person(pid), name = val('ps-name').trim();
+    if (!name) return toast('Enter a name');
+    p.name = name; p.payMode = segVal('ps-mode') || p.payMode;
+    p.day1 = clamp(parseInt(val('ps-d1'), 10) || 1, 1, 31);
+    p.amount1 = r2(parseEuro(val('ps-a1')) || 0);
+    p.day2 = clamp(parseInt(val('ps-d2'), 10) || 1, 1, 31);
+    p.amount2 = r2(parseEuro(val('ps-a2')) || 0);
+    p.holidayShift = !!($('ps-hol') && $('ps-hol').checked);
+    p.updatedAt = Date.now();
+    save(); closeSheet(); render(); toast('Saved');
+  }
+
+  /* ---- split editor ---- */
+  var ed = null;
+  function divisionSheet(pid) {
+    var p = person(pid);
+    ed = { pid: pid, pockets: JSON.parse(JSON.stringify(p.pockets)), leftover: p.leftover, round: p.round };
+    openSheet(p.name + '\'s Revolut split', '<div id="ed-body"></div>');
+    edRender();
+  }
+  function edRender() {
+    var p = person(ed.pid), mk = currentMk(), rate = rateOf(mk), own = personalMonthly(ed.pid);
+    var h = '<div class="small" style="margin:-8px 4px 14px">On every payday the money is divided top to bottom. Bills always come first.</div>';
+    h += '<div class="pk auto" style="border-left-color:' + P1C + '"><div class="dv-ic" style="background:' + tint(P1C) + '">' + (ed.pid === 'p2' ? '💸' : '🏠') + '</div><div class="grow"><div class="t">' + (ed.pid === 'p2' ? 'Send to ' + esc(mgr().name) : 'Shared bills') + '</div><div class="s">Automatic: ' + pct1(rate) + ' of pay this month</div></div></div>';
+    if (own > 0) h += '<div class="pk auto" style="border-left-color:#8e8e93"><div class="dv-ic" style="background:' + tint('#8e8e93') + '">📄</div><div class="grow"><div class="t">Own bills</div><div class="s">Automatic: ' + money(own) + '/month</div></div></div>';
+    ed.pockets.forEach(function (k, i) {
+      h += '<div class="pk" style="border-left-color:' + k.color + '">' +
+        '<div class="pk-top"><input class="pk-ic" value="' + esc(k.icon) + '" oninput="app.edSet(' + i + ',\'icon\',this.value)" aria-label="Icon">' +
+        '<input class="pk-name" value="' + esc(k.name) + '" placeholder="Pocket name" oninput="app.edSet(' + i + ',\'name\',this.value)">' +
+        '<button class="pk-btn" onclick="app.edMove(' + i + ',-1)"' + (i === 0 ? ' disabled' : '') + ' aria-label="Move up">↑</button>' +
+        '<button class="pk-btn" onclick="app.edMove(' + i + ',1)"' + (i === ed.pockets.length - 1 ? ' disabled' : '') + ' aria-label="Move down">↓</button>' +
+        '<button class="pk-btn del" onclick="app.edDel(' + i + ')" aria-label="Remove">✕</button></div>' +
+        '<div class="pk-bot"><div class="pk-val"><input inputmode="decimal" value="' + esc(k.value) + '" oninput="app.edSet(' + i + ',\'value\',this.value)" aria-label="Amount"><span>' + (k.type === 'percent' ? '%' : '€/mo') + '</span></div>' +
+        '<div class="seg mini"><button class="' + (k.type === 'fixed' ? 'on' : '') + '" onclick="app.edType(' + i + ',\'fixed\')">€ a month</button><button class="' + (k.type === 'percent' ? 'on' : '') + '" onclick="app.edType(' + i + ',\'percent\')">% of pay</button></div></div>' +
+        '<div class="pk-bot"><button class="chip' + (k.save ? ' on' : '') + '" onclick="app.edSave1(' + i + ')">' + (k.save ? '✓ Savings pot' : 'Spending pot') + '</button>' +
+        '<span class="small grow">' + (k.save ? 'Should only grow. Check-in warns if it drops.' : 'Check-in tracks how fast it\'s spent.') + '</span>' +
+        '<button class="sw" style="background:' + k.color + '" onclick="app.edColor(' + i + ')" aria-label="Change colour"></button></div></div>';
+    });
+    h += '<button class="btn gray sm" onclick="app.edAdd()">+ Add pocket</button>';
+    h += '<div class="field mt"><label>Whatever is left goes to</label><select id="ed-left" onchange="app.edLeft(this.value)">' +
+      ed.pockets.map(function (k) { return '<option value="' + esc(k.id) + '"' + (ed.leftover === k.id ? ' selected' : '') + '>' + esc(k.icon + ' ' + (k.name || 'Pocket')) + '</option>'; }).join('') +
+      '<option value="main"' + (ed.leftover === 'main' ? ' selected' : '') + '>🏦 Stays in main account</option></select></div>';
+    h += '<label class="toggle field"><div><div style="font-weight:500">Round pockets to whole euros</div><div class="small">Easier to move. The cents stay in the main account.</div></div><input type="checkbox"' + (ed.round ? ' checked' : '') + ' onchange="app.edRound(this.checked)"></label>';
+    h += '<div id="ed-prev"></div>';
+    h += '<button class="btn" onclick="app.edCommit()">Save split</button>';
+    $('ed-body').innerHTML = h;
+    edPreview();
+  }
+  function edCfg() {
+    return {
+      pockets: ed.pockets.map(function (k) { var c = JSON.parse(JSON.stringify(k)); var v = parseEuro(k.value); c.value = isNaN(v) ? 0 : Math.max(0, c.type === 'percent' ? Math.min(100, v) : v); return c; }),
+      leftover: ed.leftover, round: ed.round
+    };
+  }
+  function edPreview() {
+    var el = $('ed-prev'); if (!el) return;
+    var mk = currentMk(), est = monthlyEstimate(ed.pid, mk);
+    if (!(est > 0)) { el.innerHTML = ''; return; }
+    var dv = division(ed.pid, est, parseYmd(mk + '-15'), { month: true, cfg: edCfg() });
+    var h = '<div class="section" style="margin:6px 4px 6px"><h3>Preview: a normal month (≈' + money(est) + ')</h3></div><div class="card" style="background:var(--card2);padding:4px 14px 10px">' + barHtml(dv.lines, est);
+    dv.lines.forEach(function (l) { h += '<div class="kv"><span><span class="dot" style="background:' + l.color + '"></span>' + esc(l.icon + ' ' + l.name) + '</span><b>' + money(l.amount) + '</b></div>'; });
+    if (dv.shortfall > 0.5) h += '<div class="small c-red">The bills alone are ' + money(dv.shortfall) + ' more than the pay.</div>';
+    var short = Object.keys(dv.pockets).filter(function (id) { return dv.pockets[id].short > 0.5; });
+    if (short.length) h += '<div class="small c-orange">Not enough for: ' + short.map(function (id) { return esc(dv.pockets[id].k.name); }).join(', ') + '. Lower amounts higher up, or move them down.</div>';
+    el.innerHTML = h + '</div>';
+  }
+  function edSet(i, key, v) { ed.pockets[i][key] = v; if (key === 'name' || key === 'icon') { var s = $('ed-left'); if (s && s.options[i]) s.options[i].text = ed.pockets[i].icon + ' ' + (ed.pockets[i].name || 'Pocket'); } edPreview(); }
+  function edType(i, t) { ed.pockets[i].type = t; edRender(); }
+  function edSave1(i) { ed.pockets[i].save = !ed.pockets[i].save; edRender(); }
+  function edColor(i) { var k = ed.pockets[i], j = PALETTE.indexOf(k.color); k.color = PALETTE[(j + 1) % PALETTE.length]; edRender(); }
+  function edMove(i, d) { var j = i + d; if (j < 0 || j >= ed.pockets.length) return; var x = ed.pockets[i]; ed.pockets[i] = ed.pockets[j]; ed.pockets[j] = x; edRender(); }
+  function edDel(i) { var k = ed.pockets.splice(i, 1)[0]; if (ed.leftover === k.id) ed.leftover = ed.pockets[0] ? ed.pockets[0].id : 'main'; edRender(); }
+  function edAdd() {
+    var used = ed.pockets.map(function (k) { return k.color; }), color = PALETTE.filter(function (c) { return used.indexOf(c) < 0; })[0] || PALETTE[ed.pockets.length % PALETTE.length];
+    ed.pockets.push({ id: uid('k'), name: '', icon: '💰', color: color, type: 'fixed', value: '', save: false });
+    edRender();
+    var ins = document.querySelectorAll('#ed-body .pk-name'); if (ins.length) ins[ins.length - 1].focus();
+  }
+  function edLeft(v) { ed.leftover = v; edPreview(); }
+  function edRound(v) { ed.round = !!v; edPreview(); }
+  function edCommit() {
+    var p = person(ed.pid), cfg = edCfg();
+    cfg.pockets.forEach(function (k, i) { k.name = String(k.name || '').trim() || 'Pocket ' + (i + 1); k.icon = String(k.icon || '').trim() || '💰'; k.order = i; });
+    p.pockets = cfg.pockets.map(normalizePocket);
+    p.leftover = cfg.leftover === 'main' || byId(p.pockets, cfg.leftover) ? cfg.leftover : 'main';
+    p.round = cfg.round;
+    mirrorLegacy(p); p.updatedAt = Date.now();
+    ed = null; save(); closeSheet(); render(); toast('Split saved');
+  }
+
+  function monthSheet(mk) {
+    var L = ledger(), r = L.rows.filter(function (x) { return x.mk === mk; })[0], m = mgr(), s = ptr(), counted = !!r;
+    var sp = split(mk), sh = sharedTotal(mk), evs = r ? r.events : monthEvents(mk), t = today();
+    var body = kv(esc(m.name) + ' earned', money(sp.a.total)) + (sp.a.expectedTotal ? '<div class="small" style="margin-top:-4px">' + money(sp.a.expectedTotal) + ' of it still expected</div>' : '') +
+      kv(esc(s.name) + ' earned', money(sp.b.total)) + (sp.b.expectedTotal ? '<div class="small" style="margin-top:-4px">' + money(sp.b.expectedTotal) + ' of it still expected</div>' : '') +
+      '<div class="hr"></div>' + kv('Split', pct(sp.p1) + ' / ' + pct(sp.p2)) + kv('Shared bills that month', money(sh)) +
+      (sp.total > 0 ? kv('Share of every euro earned', pct1(sh / sp.total)) : '') +
+      kv(esc(s.name) + '\'s part', money(r ? r.charge : sum(evs, 'amount')), 'c-blue');
+    if (evs.length) {
+      body += '<div class="section" style="margin:16px 4px 8px"><h3>When it\'s due</h3></div><div class="list">';
+      evs.forEach(function (e) {
+        var st = !counted ? '<span class="pill exp">not counted</span>' : e.left <= 0.005 ? '<span class="pill ok">Paid ✓</span>' : e.date > t ? '<span class="pill exp">' + relDay(e.date) + '</span>' : '<span class="pill due">' + money(e.left) + ' open</span>';
+        body += '<div class="item"><div class="grow"><div class="t">' + dayLong(e.date) + '</div><div class="s">' + esc(evLabel(e)) + (e.src && e.src.expected ? ' · expected' : '') + '</div></div><div style="text-align:right"><div class="amt">' + money(e.amount) + '</div>' + st + '</div></div>';
+      });
+      body += '</div>';
+    }
+    body += counted ? kv('Paid towards it', money(r.paid), 'c-green') + kv('Open now', money(r.open)) : '<div class="small c-orange">Not counted: this month is before the start month.</div>';
+    body += '<div class="small mt">' + esc(s.name) + '\'s part = shared bills × ' + esc(s.name) + '\'s share of the income that landed that month. It becomes due on each payday. Payments pay off the oldest amount first.</div>';
+    if (mk < currentMk() && isManagerView()) body += '<button class="btn gray mt" onclick="app.refreshMonth(\'' + mk + '\')">Use today\'s bill amounts for this month</button>';
+    body += '<div class="btns mt"><button class="btn gray" onclick="app.openPayMonth(\'p1\',\'' + mk + '\')">' + esc(m.name) + '\'s pay</button><button class="btn gray" onclick="app.openPayMonth(\'p2\',\'' + mk + '\')">' + esc(s.name) + '\'s pay</button></div>';
+    openSheet(monthName(mk), body);
+  }
+  function balanceSheet() {
+    var L = ledger(), m = mgr(), s = ptr(), counted = countedTransfers(), t = today();
+    var fromS = counted.filter(function (x) { return x.from === 'p2'; }), fromM = counted.filter(function (x) { return x.from === 'p1'; });
+    var legacy = activeTransfers().filter(isLegacy);
+    var early = activeTransfers().filter(function (x) { return !isLegacy(x) && String(x.date) < D.settings.startMonth + '-01'; });
+    var body = '<div class="small" style="margin-bottom:8px">Counting from 1 ' + monthName(D.settings.startMonth) + '. Every time ' + esc(s.name) + ' gets paid, a share of that pay is added (the same % of income you both put toward shared bills). Payments take it off again.</div>';
+    if (L.opening) body += kv('Owed before that', money(L.opening));
+    L.rows.forEach(function (r) { if (r.due > 0.004 || r.current) body += kv(monthName(r.mk, true) + (r.current ? ' so far' : '') + ' · ' + pct(r.split.p2) + ' of ' + money(r.shared), '+ ' + money(r.due)); });
+    if (!L.rows.length) body += '<div class="small">No months counted yet.</div>';
+    body += kv('Paid by ' + esc(s.name) + ' (' + fromS.length + ')', '− ' + money(sum(fromS, 'amount')), 'c-green');
+    if (fromM.length) body += kv('Paid by ' + esc(m.name) + ' to ' + esc(s.name) + ' (' + fromM.length + ')', '+ ' + money(sum(fromM, 'amount')));
+    body += '<div class="hr"></div>' + kv(L.owed > 0.005 ? esc(s.name) + ' owes ' + esc(m.name) : L.owed < -0.005 ? esc(s.name) + ' is ahead by' : 'Balance', Math.abs(L.owed) > 0.005 ? money(Math.abs(L.owed)) : 'All square');
+    var up = L.events.filter(function (e) { return !e.past && e.date <= addDays(t, 62); });
+    if (up.length) {
+      body += '<div class="section" style="margin:18px 4px 8px"><h3>Coming up</h3></div><div class="list">';
+      up.forEach(function (e) { body += '<div class="item"><div class="grow"><div class="t">' + dayLong(e.date) + ' · ' + relDay(e.date) + '</div><div class="s">' + esc(evLabel(e)) + (e.paid > 0.005 ? ' · ' + money(e.paid) + ' already covered' : '') + '</div></div><div class="amt">' + (e.src && e.src.expected ? '≈ ' : '') + money(e.left) + '</div></div>'; });
+      body += '</div>';
+    }
+    if (counted.length) {
+      body += '<div class="section" style="margin:18px 4px 8px"><h3>Payments counted</h3></div><div class="list">';
+      counted.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).forEach(function (x) { body += transferRow(x); });
+      body += '</div><div class="small">Tap a payment to fix or delete it.</div>';
+    }
+    if (legacy.length || early.length) {
+      body += '<div class="section" style="margin:18px 4px 8px"><h3>Not counted</h3></div>' +
+        (legacy.length ? kv('Old app payments (history only)', legacy.length + ' · ' + money(sum(legacy, 'amount'))) : '') +
+        (early.length ? kv('Payments before ' + monthName(D.settings.startMonth, true), early.length + ' · ' + money(sum(early, 'amount'))) : '') +
+        '<div class="small">Kept for reference only. If something was still owed from before, enter it in Settings → Tracking.</div>';
+    }
+    body += '<button class="btn go mt" onclick="app.transferSheet()">Record a payment</button>';
+    openSheet('How this is calculated', body);
+  }
+  function transferRow(x) {
+    var to = otherId(x.from);
+    return '<div class="item tap" onclick="app.transferSheet(\'' + x.id + '\')"><div class="avatar" style="background:rgba(48,209,88,.15);color:var(--green)">⇄</div>' +
+      '<div class="grow"><div class="t">' + esc(person(x.from).name) + ' → ' + esc(person(to).name) + (isLegacy(x) ? ' <span class="pill exp">old app</span>' : '') + '</div><div class="s">' + dayLabel(parseYmd(x.date)) + (x.note ? ' · ' + esc(x.note) : '') + '</div></div>' +
+      '<div class="amt">' + money(x.amount) + '</div></div>';
+  }
+  function targetSheet() {
+    var tb = targetBalance(), body = '<div class="small" style="margin-bottom:10px">Your next pay: <b>' + dayLong(tb.nextPay) + '</b>. Everything your main account pays until then (that day included), plus the part to put aside for bills that come less often.</div><div class="list">';
+    if (!tb.rows.length) body += '<div class="empty">No bills from your account.</div>';
+    tb.rows.forEach(function (r) {
+      var sub = r.kind === 'due' ? 'Due ' + dayLong(r.due) : r.kind === 'saving' ? 'Due ' + dayLabel(r.due) + ' · ' + pct(r.frac) + ' put aside by now' : 'Due ' + dayLabel(r.due) + ' · after your pay';
+      body += '<div class="item"><div class="grow"><div class="t">' + esc(r.b.title) + (r.b.shared ? '<span class="tag sh">shared</span>' : '') + '</div><div class="s">' + sub + '</div></div><div class="amt' + (r.need > 0.004 ? '' : ' c-muted') + '">' + money(r.need) + '</div></div>';
+    });
+    body += '</div>' + kv('Total needed today', money(tb.total));
+    openSheet('Main account', body);
+  }
+  function mainSheet() {
+    var last = lastMain();
+    openSheet('Main account balance', field('What\'s in your main account now?', moneyInput('mb-amt', '')) +
+      '<div class="small" style="margin:-6px 4px 14px">Your Revolut main balance, not the pockets.' + (last ? ' Last time: ' + money(+last.main) + ' on ' + dayLabel(parseYmd(last.date)) + '.' : '') + '</div>' +
+      '<button class="btn" onclick="app.saveMain()">Save</button>');
+    setTimeout(function () { var e = $('mb-amt'); if (e) e.focus(); }, 300);
+  }
+  function saveMain() {
+    var v = parseEuro(val('mb-amt'));
+    if (isNaN(v)) return toast('Enter an amount');
+    upsertCheckin('p1', null, r2(v));
+    save(); closeSheet(); render(); toast('Balance saved');
+  }
+  function refreshMonth(mk) { D.snapshots[mk] = makeSnapshot(mk); save(); closeSheet(); render(); toast('Updated'); }
+
+  function whoSheet() {
+    var body = '<div class="small">This decides what you see. You can change it later in Settings.</div><div class="who">' +
+      '<button class="btn" onclick="app.setMe(\'p1\',true)">' + esc(mgr().name) + ' (pays the shared bills)</button>' +
+      '<button class="btn" style="background:var(--p2)" onclick="app.setMe(\'p2\',true)">' + esc(ptr().name) + '</button></div>';
+    openSheet('Whose phone is this?', body);
+  }
+  function setMe(id, fromSheet) {
+    D.local.me = id; lsSet(ME_KEY, id); checkinFor = null; payState = { pid: null, key: null, mk: null, view: 'pay' };
+    if (fromSheet) { closeSheet(); if (D._migrated) toast('Imported bills, pay dates' + (D._hist ? ', ' + D._hist.incomes + ' deposits and ' + D._hist.transfers + ' payments' : '') + ' from the old app'); }
+    render();
+  }
+
+  function saveTracking() {
+    var sm = val('set-start'), ob = parseEuro(val('set-open'));
+    if (!/^\d{4}-\d{2}$/.test(sm)) return toast('Pick a month');
+    D.settings.startMonth = sm; D.settings.openingBalance = isNaN(ob) ? 0 : r2(ob); D.settings.updatedAt = Date.now();
+    save(); render(); toast('Saved');
+  }
+  function setSendMode(v) {
+    if (!D.settings.sendSlot) D.settings.sendSlot = sendSlot();
+    D.settings.sendMode = v === 'monthly' ? 'monthly' : 'each'; D.settings.updatedAt = Date.now();
+    save(); render(); toast(v === 'monthly' ? 'Once a month' : 'Every payday');
+  }
+  function setSendSlot(v) { D.settings.sendSlot = v; D.settings.updatedAt = Date.now(); save(); render(); }
+  function saveTag() {
+    D.settings.revolutTag = val('set-tag').replace(/^@/, '').replace(/^https?:\/\/(www\.)?revolut\.me\//i, '').replace(/[^a-z0-9._-]/gi, '').trim();
+    D.settings.updatedAt = Date.now(); save(); render(); toast('Saved');
+  }
+  function copySync() { copyText(exportCode(), 'Backup code copied. Keep it somewhere safe.'); }
+  function pasteSync() {
+    try { if (navigator.clipboard && navigator.clipboard.readText) { navigator.clipboard.readText().then(onPaste).catch(function () { toast('Tap in the box and paste instead'); }); return; } } catch (e) {}
+    toast('Tap in the box and paste instead');
+  }
+  function onPaste(t) { var e = $('sync-in'); if (e && t) e.value = t; }
+  function importSync(replace) {
+    var text = val('sync-in');
+    if (!text.trim()) return toast('Paste a code first');
+    var res;
+    try { res = decodeCode(text); } catch (e) { return toast('That code could not be read'); }
+    if (replace && !confirmTwice('btn-replace', cloud.local ? 'Tap again to replace' : 'Tap again: this replaces the data on BOTH phones')) return;
+    var incoming = res.v === 1 ? migrateV24(res.data) : res.data, me = D.local.me;
+    if (replace) { D = normalize(incoming); dedupeLegacy(D); cutover(D); D.local = { me: me }; delete D._migrated; cloud.replace = true; }
+    else mergeData(incoming);
+    save(); render(); toast(replace ? (cloud.local ? 'Replaced' : 'Replaced. Syncing to both phones…') : 'Merged');
+  }
+  function copySummary() {
+    var L = ledger(), m = mgr(), s = ptr(), out = [];
+    out.push('FairShare, ' + today().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }));
+    out.push(L.owed > 0.005 ? s.name + ' → ' + m.name + ' now: ' + money(L.owed) : L.owed < -0.005 ? s.name + ' is ahead by ' + money(-L.owed) : 'All square');
+    var up = L.events.filter(function (e) { return !e.past && e.left > 0.005; }).slice(0, 4);
+    if (up.length) { out.push(''); out.push('Next payments from ' + s.name + ':'); up.forEach(function (e) { out.push('  ' + dayLabel(e.date) + '  ' + money(e.left) + '  (' + evLabel(e) + ')'); }); }
+    out.push('');
+    out.push('Coming up:');
+    timeline(35).forEach(function (e) {
+      if (e.type === 'bill' && e.b.shared) out.push('  ' + dayLabel(e.date) + '  ' + e.b.title + ' ' + money(e.b.amount));
+    });
+    out.push('');
+    L.rows.slice().reverse().slice(0, 4).forEach(function (r) {
+      out.push(monthName(r.mk) + (r.current ? ' (so far)' : ''));
+      out.push('  Income: ' + m.name + ' ' + money(r.split.a.total) + ', ' + s.name + ' ' + money(r.split.b.total) + ' (' + pct(r.split.p1) + ' / ' + pct(r.split.p2) + ')');
+      out.push('  Shared bills ' + money(r.shared) + ' x ' + pct(r.split.p2) + ' = ' + money(r.charge) + '. Paid ' + money(r.paid) + ', open ' + money(r.open));
+    });
+    copyText(out.join('\n'), 'Summary copied');
+  }
+
+  /* ================= boot ================= */
+  function init() {
+    D = load();
+    var h = String(location.hash || '').slice(1);
+    if (TABS.indexOf(h) > -1) tab = h;
+    render();
+    document.addEventListener('focusout', function () { setTimeout(function () { if (pendingRender && !($('view').contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))) { pendingRender = false; render(); } }, 50); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (cloud.dirty) push();
+      if (renderedDay !== ymd(today())) softRender(); // the app was left open overnight
+    });
+  }
+
+  var api = {
+    init: init, go: go, cloudReady: cloudReady, cloudFailed: cloudFailed, startLocal: startLocal, showLogin: showLogin, authGo: authGo, authReset: authReset, signOut: signOut,
+    forceSignOut: function () { lsSet(CACHE_KEY, null); cloud.fb.signOut().then(function () { location.reload(); }); },
+    closeSheet: closeSheet, segPick: segPick, dismiss: dismiss, applyRaise: applyRaise, _toastAct: toastAct, copyAmt: copyAmt,
+    incomeSheet: incomeSheet, saveIncome: saveIncome, delIncome: delIncome, incFormChanged: incFormChanged, incSlotPicked: incSlotPicked,
+    landed: landed, confirmItem: confirmItem, openPay: openPay, pickPay: pickPay, tick: tick, quickSend: quickSend, payRevolut: payRevolut,
+    payWho: function (v) { payState = { pid: v, key: null, mk: null, view: payState.view }; render(); },
+    payView: function (v) { payState.view = v; render(); },
+    payMonth: function (n) { var sel = findItem(payState.key) || defaultItem(payState.pid || meId()), mk = mkAdd(payState.mk || (sel ? ym(sel.date) : currentMk()), n); if (mk > mkAdd(currentMk(), 1)) return; payState.mk = mk; render(); },
+    openPayMonth: function (pid, mk) { payState = { pid: pid, key: null, mk: mk, view: 'pay' }; var it = incomeFor(pid, mk).items[0]; if (it) payState.key = it.key; go('payday'); },
+    transferSheet: transferSheet, saveTransfer: saveTransfer, delTransfer: delTransfer,
+    billSheet: billSheet, billFreqChanged: billFreqChanged, saveBill: saveBill, delBill: delBill,
+    paySheet: paySheet, personModeChanged: personModeChanged, savePay: savePay,
+    divisionSheet: divisionSheet, edSet: edSet, edType: edType, edSave1: edSave1, edColor: edColor, edMove: edMove, edDel: edDel, edAdd: edAdd, edLeft: edLeft, edRound: edRound, edCommit: edCommit,
+    monthSheet: monthSheet, balanceSheet: balanceSheet, targetSheet: targetSheet, mainSheet: mainSheet, saveMain: saveMain, refreshMonth: refreshMonth, setMe: setMe,
+    saveCheckin: saveCheckin, delCheckinSheet: delCheckinSheet, delCheckin: delCheckin,
+    checkinWho: function (v) { checkinFor = v; render(); },
+    saveTracking: saveTracking, setSendMode: setSendMode, setSendSlot: setSendSlot, saveTag: saveTag,
+    copySync: copySync, pasteSync: pasteSync, onPaste: onPaste, importSync: importSync, copySummary: copySummary,
+    // for debugging in the browser console
+    _data: function () { return D; }, _ledger: ledger, _split: split, _division: division, _target: targetBalance,
+    _timeline: timeline, _advice: advice, _parseEuro: parseEuro, _exportCode: exportCode, _cloud: function () { return cloud; }
+  };
+  return api;
+})();
+app.init();
+</script>
+<script type="module">
+  // Firebase (login + live database). Version from firebase.google.com/docs/web/alt-setup
+  const V = '12.19.0';
+  const cfg = window.FAIRSHARE_CONFIG || {};
+  const fbc = cfg.firebase || {};
+  if (!fbc.apiKey || /PASTE/.test(fbc.apiKey)) {
+    app.cloudFailed('config.js is not filled in yet. Paste your Firebase settings into config.js (see the setup guide).', true);
+  } else {
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/' + V + '/firebase-app.js');
+      const A = await import('https://www.gstatic.com/firebasejs/' + V + '/firebase-auth.js');
+      const F = await import('https://www.gstatic.com/firebasejs/' + V + '/firebase-firestore.js');
+      const fbApp = initializeApp(fbc);
+      const auth = A.getAuth(fbApp);
+      try { await A.setPersistence(auth, A.browserLocalPersistence); } catch (e) {}
+      const db = F.getFirestore(fbApp);
+      const ref = F.doc(db, 'households', cfg.householdId || 'home');
+      app.cloudReady({
+        onAuth: (cb) => A.onAuthStateChanged(auth, (u) => cb(u ? { uid: u.uid, email: u.email } : null)),
+        signIn: (e, p) => A.signInWithEmailAndPassword(auth, e, p),
+        signUp: (e, p) => A.createUserWithEmailAndPassword(auth, e, p),
+        reset: (e) => A.sendPasswordResetEmail(auth, e),
+        signOut: () => A.signOut(auth),
+        watch: (cb, onErr) => F.onSnapshot(ref, (snap) => cb(snap.exists() ? snap.data().data : null), onErr),
+        transact: (fn) => F.runTransaction(db, async (tx) => {
+          const snap = await tx.get(ref);
+          const text = fn(snap.exists() ? snap.data().data : null);
+          tx.set(ref, { data: text, updatedAt: F.serverTimestamp(), by: (auth.currentUser && auth.currentUser.email) || '' });
+        })
+      });
+    } catch (e) {
+      app.cloudFailed('Could not load Firebase. Check your internet connection and try again. (' + (e && e.message) + ')');
+    }
+  }
+</script>
+</body>
+</html>
