@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FairShare">
 <meta name="theme-color" content="#000000">
-<meta name="fairshare-version" content="2026-10-09e">
+<meta name="fairshare-version" content="2026-10-09f">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1383,7 +1383,7 @@ var app = (function () {
     if (ready()) ensureSnapshots();
     renderedDay = ymd(today());
     renderTabs();
-    $('view').innerHTML = tab === 'payday' ? viewPayday() : tab === 'history' ? viewHistory() : tab === 'bills' ? viewBills() : tab === 'checkin' ? viewCheckin() : tab === 'settings' ? viewSettings() : viewHome();
+    $('view').innerHTML = updateBanner() + (tab === 'payday' ? viewPayday() : tab === 'history' ? viewHistory() : tab === 'bills' ? viewBills() : tab === 'checkin' ? viewCheckin() : tab === 'settings' ? viewSettings() : viewHome());
   }
   function go(t) {
     tab = TABS.indexOf(t) > -1 ? t : 'home'; closeSheet(); render(); window.scrollTo(0, 0);
@@ -2521,15 +2521,24 @@ var app = (function () {
 
   /* ================= boot ================= */
   function appVersion() { var m = document.querySelector('meta[name="fairshare-version"]'); return m ? m.content : '?'; }
-  // Phones keep a copy of the app for a while. Each time it's opened, check for a newer version and load it.
+  // Phones keep a copy of the app for a while (and the home-screen icon always opens that copy first).
+  // Each time the app is opened, check for a newer version and load it from a fresh address.
+  var newVersion = null;
+  function freshUrl() { return location.pathname + '?v=' + Date.now().toString(36) + location.hash; }
   function checkUpdate() {
     if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
     fetch('./?v=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
       var m = t.match(/<meta name="fairshare-version" content="([^"]+)"/);
-      if (!m || m[1] === appVersion() || lsGet('fairshare_upd') === m[1]) return;
-      lsSet('fairshare_upd', m[1]); // only try once per version
-      location.replace(location.pathname + '?v=' + encodeURIComponent(m[1]) + location.hash);
+      if (!m || m[1] === appVersion()) { newVersion = null; return; }
+      newVersion = m[1];
+      var last = +lsGet('fairshare_upd_at') || 0;
+      if (Date.now() - last > 30000) { lsSet('fairshare_upd_at', String(Date.now())); location.replace(freshUrl()); return; } // at most once every 30 s, so it can't loop
+      softRender(); // shows the "Update now" banner
     }).catch(function () {});
+  }
+  function forceUpdate() { lsSet('fairshare_upd_at', String(Date.now())); location.replace(freshUrl()); }
+  function updateBanner() {
+    return newVersion ? alertHtml({ lvl: 'news', ic: '⬆️', html: '<b>A new version of the app is ready.</b> Tap Update now to load it.', btns: [['Update now', 'app.forceUpdate()', 'pri']] }) : '';
   }
   function init() {
     checkUpdate();
@@ -2571,7 +2580,7 @@ var app = (function () {
     copySync: copySync, pasteSync: pasteSync, onPaste: onPaste, importSync: importSync, copySummary: copySummary,
     // for debugging in the browser console
     _data: function () { return D; }, _ledger: ledger, _history: payHistory, _split: split, _division: division, _target: targetBalance,
-    _timeline: timeline, _advice: advice, _parseEuro: parseEuro, _exportCode: exportCode, _cloud: function () { return cloud; }
+    _timeline: timeline, _advice: advice, _parseEuro: parseEuro, _exportCode: exportCode, _cloud: function () { return cloud; }, forceUpdate: forceUpdate, _checkUpdate: checkUpdate
   };
   return api;
 })();
