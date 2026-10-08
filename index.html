@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FairShare">
 <meta name="theme-color" content="#000000">
-<meta name="fairshare-version" content="2026-10-09">
+<meta name="fairshare-version" content="2026-10-09b">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1018,16 +1018,20 @@ var app = (function () {
   }
   // "For the rest of pay of 6 Oct + €12.00 extra" (HTML)
   function coversText(p) {
-    var tiny = 0, cov = p.covers.filter(function (c) { if (!p.back && c.amount < 1 && p.covers.length > 1) { tiny += c.amount; return false; } return true; });
-    var parts = cov.map(function (c) {
+    var tiny = 0, now = [], early = [];
+    p.covers.forEach(function (c) {
+      if (!p.back && c.amount < 1 && p.covers.length > 1) { tiny += c.amount; return; }
       var d = c.d, what = d.opening ? 'what was open before ' + monthName(D.settings.startMonth, true) : evFor(d.e);
-      if (d.e && parseYmd(p.t.date) < d.e.date) what += ' (early)';
-      return what + (Math.abs(c.amount - d.amount) > 0.005 && !(d.e && d.e.carried) ? ': ' + money(c.amount) + ' of ' + money(d.amount) : '');
+      var part = Math.abs(c.amount - d.amount) > 0.005 && !(d.e && d.e.carried);
+      if (!p.back && d.e && parseYmd(p.t.date) < d.e.date) early.push(money(c.amount) + ' paid early toward ' + what);
+      else now.push(what + (part ? ' (' + money(c.amount) + ' of ' + money(d.amount) + ')' : ''));
     });
-    if (p.back) return parts.length ? 'Paid back. Opens ' + parts.join(' + ') + ' again' : 'Paid back';
+    if (p.back) return now.length ? 'Paid back. Opens ' + now.join(' + ') + ' again' : 'Paid back';
+    var parts = now.length ? ['for ' + now.join(' + ')] : [];
     if (tiny > 0.005) parts.push(money(tiny) + ' left from before');
+    parts = parts.concat(early);
     if (p.extra > 0.005) parts.push(money(p.extra) + ' extra, counts toward the next one');
-    return parts.length ? 'For ' + parts.join(' + ') : 'Nothing was open yet';
+    return parts.length ? cap(parts.join(' + ')) : 'Nothing was open yet';
   }
   function evStatus(e) {
     payHistory();
@@ -1102,23 +1106,54 @@ var app = (function () {
     return movesDone && (!dv.event || dv.event.left <= 0.005 || dv.event.carried);
   }
 
-  /* ================= main account ================= */
-  // What the manager's main account needs today: every bill it pays up to and including the next
-  // payday, plus the part already "built up" for quarterly/yearly bills.
+  /* ================= main bank ================= */
+  // What the main bank needs today so every bill can go out on time:
+  // 1. the bills coming up, minus the money for bills that arrives before each one (the bills part of
+  //    Daniil's next pays and Sabrina's transfers). The tightest moment decides, e.g. rent right after a payday.
+  // 2. what's saved up by now for yearly & quarterly bills (each month puts 1/12 or 1/3 aside).
+  // The part of each pay meant for those yearly & quarterly bills goes to 2, not to 1.
   function targetBalance() {
     if (memo.target) return memo.target;
-    var t = today(), np = nextPayday('p1', t);
-    var npDate = np ? np.date : addDays(t, 30);
-    var rows = activeBills().filter(function (b) { return paidFrom(b) === 'p1'; }).map(function (b) {
-      var d = billDates(b, t), f = +b.frequency || 1;
-      if (d.next <= npDate) return { b: b, due: d.next, need: +b.amount, kind: 'due' };
-      if (f === 1) return { b: b, due: d.next, need: 0, kind: 'later' };
-      var total = daysBetween(d.prev, d.next), passed = daysBetween(d.prev, t);
-      var frac = total > 0 ? clamp(passed / total, 0, 1) : 0;
-      return { b: b, due: d.next, need: +b.amount * frac, frac: frac, kind: 'saving' };
+    var t = today(), np = nextPayday('p1', t), npDate = np ? np.date : addDays(t, 30), end = addDays(t, 62);
+    var bills = activeBills().filter(function (b) { return paidFrom(b) === 'p1'; });
+    function slowShare(list) { var tot = sum(list, monthlyOf); return tot > 0 ? sum(list.filter(function (b) { return (+b.frequency || 1) > 1; }), monthlyOf) / tot : 0; }
+    var slowS = slowShare(bills.filter(function (b) { return b.shared; })), slowO = slowShare(bills.filter(function (b) { return !b.shared; }));
+    var flows = [], saved = [];
+    bills.forEach(function (b) {
+      if ((+b.frequency || 1) === 1) {
+        for (var off = 0; off <= 3; off++) {
+          var mk = mkAdd(ym(t), off), d = billDateIn(b, mkYear(mk), mkMonth0(mk));
+          if (d >= t && d <= end) flows.push({ date: d, out: +b.amount || 0, b: b });
+        }
+        return;
+      }
+      var bd = billDates(b, t);
+      if (bd.next <= npDate) { flows.push({ date: bd.next, out: +b.amount || 0, b: b }); return; } // due before the next pay: all of it now
+      var total = daysBetween(bd.prev, bd.next), frac = total > 0 ? clamp(daysBetween(bd.prev, t) / total, 0, 1) : 0;
+      saved.push({ b: b, due: bd.next, prev: bd.prev, frac: frac, need: r2((+b.amount || 0) * frac) });
     });
-    rows.sort(function (a, b) { return a.due - b.due; });
-    return (memo.target = { rows: rows, total: r2(sum(rows, 'need')), nextPay: npDate });
+    var ownM = personalMonthly('p1');
+    payItems('p1', ym(t), ym(end)).forEach(function (it) {
+      if (it.date <= t || it.date > end) return;
+      var mk = ym(it.date), est = monthlyEstimate('p1', mk);
+      var part = it.amount * rateOf(mk) * (1 - slowS) + ownM * (est > 0 ? Math.min(1, it.amount / est) : 0) * (1 - slowO);
+      if (part > 0.004) flows.push({ date: it.date, inn: r2(part), who: 'p1', it: it });
+    });
+    ledger().events.forEach(function (e) {
+      if (e.date > t && e.date <= end && e.left > 0.005) flows.push({ date: e.date, inn: r2(e.left * (1 - slowS)), who: 'p2', e: e });
+    });
+    flows.sort(function (a, b) { return a.date - b.date || (a.out ? 0 : 1) - (b.out ? 0 : 1); }); // same day: the bill first, to be safe
+    var run = 0, gaps = flows.map(function (x) { run += x.out ? -x.out : x.inn; return -run; });
+    var worst = Math.max.apply(null, [0].concat(gaps)), need = 0, at = null, k = -1;
+    // every month looks about the same, so show the first moment that is (nearly) the tightest
+    if (worst > 0.004) for (k = 0; k < gaps.length && gaps[k] < worst - 1; k++);
+    if (k > -1) { need = gaps[k]; at = flows[k]; }
+    var upto = k > -1 ? flows.slice(0, k + 1) : [];
+    saved.sort(function (a, b) { return a.due - b.due; });
+    return (memo.target = {
+      need: r2(need), at: at, upto: upto, outs: upto.filter(function (x) { return x.out; }), ins: upto.filter(function (x) { return x.inn; }),
+      saved: saved, savedTotal: r2(sum(saved, 'need')), total: r2(need + sum(saved, 'need')), nextPay: npDate
+    });
   }
   function lastMain() { return checkinsOf('p1').filter(function (c) { return c.main != null && c.main !== ''; })[0] || null; }
 
@@ -1417,11 +1452,12 @@ var app = (function () {
       h += mv ? '<div class="btns mt"><button class="btn go" onclick="app.quickSend(' + r2(owed) + ')">Mark as received</button><button class="btn gray" onclick="app.transferSheet()">Other amount</button></div>'
         : '<div class="btns mt"><button class="btn go" onclick="app.quickSend(' + r2(owed) + ')">I sent it</button><button class="btn gray" onclick="app.payRevolut(' + r2(owed) + ')">' + (D.settings.revolutTag ? 'Open Revolut' : 'Copy amount') + '</button></div>';
     } else {
-      if (owed <= -CARRY_MAX) h += '<div class="hero-lbl">' + (mv ? esc(s.name) + ' is ahead by' : 'You\'re ahead by') + '</div><div class="big c-green">' + money(-owed) + '</div>' +
-        '<div class="small">More was sent than needed so far. It comes off the next payment below.</div>';
-      else h += '<div class="hero-lbl">Right now</div><div class="big c-green">All square ✓</div><div class="small">' +
+      var nxp = L.events.filter(function (e) { return !e.past && e.paid > 0.005; })[0], ap = nxp && nxp.src && nxp.src.expected ? '≈' : '';
+      h += '<div class="hero-lbl">Right now</div><div class="big c-green">All square ✓</div><div class="small">' +
         (L.carry ? 'Only a small difference of ' + money(L.carry) + ' is left. It\'s added to the next transfer.'
-          : owed < -0.005 ? money(-owed) + ' extra was sent. It comes off the next transfer.'
+          : owed < -0.005 ? (mv ? esc(s.name) + ' already paid ' : 'You already paid ') + '<b class="w">' + money(-owed) + '</b> toward the next transfer' +
+            (nxp ? (nxp.left > 0.005 ? ', so on ' + dayLong(nxp.date) + ' it\'s only ' + ap + money(nxp.left) + ' instead of ' + ap + money(nxp.amount) : ': ' + dayLong(nxp.date) + ' is already covered') : '') +
+            '. This happens when a pay is confirmed at a different amount: the month\'s % changes, and so does ' + esc(yours('p2')) + ' part.'
           : mv ? 'Nothing open.' : 'Nothing to send right now.') + '</div>';
       var lp = lastPayment();
       if (lp) h += '<div class="why">Last payment: ' + (lp.t.from === 'p2' ? (mv ? esc(s.name) + ' sent you' : 'you sent ' + esc(m.name)) : (mv ? 'you sent ' + esc(s.name) : esc(m.name) + ' sent you')) +
@@ -1448,11 +1484,14 @@ var app = (function () {
   }
 
   function mainCard(L) {
-    var tb = targetBalance(), last = lastMain(), s = ptr(), bank = esc(bankLabel('p1'));
-    var h = '<div class="card"><div class="hero-top"><div class="label">🏦 Main bank</div><button class="link sm" onclick="app.targetSheet()">Details ›</button></div>';
+    var tb = targetBalance(), last = lastMain(), s = ptr();
+    var h = '<div class="card"><div class="hero-top"><div class="label">🏦 Main bank</div><button class="link sm" onclick="app.targetSheet()">How? ›</button></div>';
     h += '<div class="cols mt-s"><div><div class="small">Should have today</div><div class="mid">' + money(tb.total) + '</div></div>';
     if (last) h += '<div style="text-align:right"><div class="small">You had ' + (daysSince(last.date) === 0 ? 'today' : 'on ' + dayLabel(parseYmd(last.date))) + '</div><div class="mid">' + money(+last.main) + '</div></div>';
-    h += '</div><div class="small mt-s">The bills that leave ' + bank + ' until your next pay (' + dayLong(tb.nextPay) + '), plus what to set aside for quarterly & yearly bills. Money on Revolut doesn\'t count.</div>';
+    h += '</div><div style="margin-top:10px">' +
+      whyRow('<span class="c-muted" style="font-weight:400">' + (tb.at ? 'For the bills until ' + dayLabel(tb.at.date) : 'For the bills coming up') + '</span>', money(tb.need)) +
+      (tb.saved.length ? whyRow('<span class="c-muted" style="font-weight:400">Saved for yearly & quarterly bills</span>', money(tb.savedTotal)) : '') + '</div>';
+    if (tb.at) h += '<div class="small mt-s">By ' + dayLong(tb.at.date) + ', ' + money(sum(tb.outs, 'out')) + ' of bills go out and only ' + money(sum(tb.ins, 'inn')) + ' for bills comes in before then. Money on Revolut doesn\'t count.</div>';
     if (last) {
       var gap = r2(+last.main - tb.total), old = daysSince(last.date);
       var inRev = r2(sum(unmoved(), 'amount')), soon = L.owed > 0.005 && !L.carry ? L.owed : 0;
@@ -1461,7 +1500,7 @@ var app = (function () {
       else if (soon && gap + inRev + soon >= 0) h += '<div class="state warn">' + money(-gap) + ' short until ' + esc(s.name) + ' sends ' + money(soon) + (sendsToRevolut() ? ' and you move it over' : '') + '</div>';
       else h += '<div class="state bad">⚠️ ' + money(-gap) + ' short' + (soon || inRev ? ' (still ' + money(-gap - inRev - soon) + ' after ' + esc(s.name) + '\'s money)' : '') + '</div>';
       if (old > 3) h += '<div class="small mt-s">That balance is ' + old + ' days old. Update it for an exact answer.</div>';
-    }
+    } else h += '<div class="small mt-s">Enter what\'s in your main bank to see if it\'s covered.</div>';
     return h + '<button class="btn gray sm mt" onclick="app.mainSheet()">Update main bank balance</button></div>';
   }
 
@@ -1925,7 +1964,7 @@ var app = (function () {
     if (pid === 'p1' && main != null) {
       var tb = targetBalance(), gap = main - tb.total;
       var bk = esc(bankLabel('p1'));
-      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: cap(bk) + ' covers every bill until ' + dayLabel(tb.nextPay) + ' (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>' + cap(bk) + ' is ' + money(-gap) + ' short</b> for the bills up to ' + dayLabel(tb.nextPay) + '.' });
+      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: cap(bk) + ' covers the bills' + (tb.at ? ' until ' + dayLabel(tb.at.date) : '') + ' and the yearly savings (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>' + cap(bk) + ' is ' + money(-gap) + ' short</b> for the bills' + (tb.at ? ' until ' + dayLabel(tb.at.date) : '') + ' and the yearly savings.' });
     }
     advice(pid).filter(function (a) { return a.ic === '💡'; }).forEach(function (a) { body += alertHtml(a); });
     openSheet('Check-in done', (body || '<div class="small">Saved.</div>') + '<button class="btn gray mt" onclick="app.closeSheet()">OK</button>');
@@ -2346,13 +2385,29 @@ var app = (function () {
       '<div class="amt">' + money(x.amount) + '</div></div>';
   }
   function targetSheet() {
-    var tb = targetBalance(), bk = esc(bankLabel('p1')), body = '<div class="small" style="margin-bottom:10px">Your next pay: <b>' + dayLong(tb.nextPay) + '</b>. Every bill that leaves ' + bk + ' until then (that day included), plus the part to set aside for bills that come less often. Revolut isn\'t part of this.</div><div class="list">';
-    if (!tb.rows.length) body += '<div class="empty">No bills from your account.</div>';
-    tb.rows.forEach(function (r) {
-      var sub = r.kind === 'due' ? 'Due ' + dayLong(r.due) : r.kind === 'saving' ? 'Due ' + dayLabel(r.due) + ' · ' + pct(r.frac) + ' put aside by now' : 'Due ' + dayLabel(r.due) + ' · after your pay';
-      body += '<div class="item"><div class="grow"><div class="t">' + esc(r.b.title) + (r.b.shared ? '<span class="tag sh">shared</span>' : '') + '</div><div class="s">' + sub + '</div></div><div class="amt' + (r.need > 0.004 ? '' : ' c-muted') + '">' + money(r.need) + '</div></div>';
-    });
-    body += '</div>' + kv('Total needed today', money(tb.total));
+    var tb = targetBalance(), s = ptr(), mine = meId() === 'p1';
+    var body = '<div class="why" style="margin:-6px 0 6px">What has to be in ' + esc(bankLabel('p1')) + ' today so every bill can go out on time. It already counts the money for bills that still comes in: the bills part of ' + (mine ? 'your' : esc(mgr().name) + '\'s') + ' next pays and ' + esc(s.name) + '\'s transfers. Money on Revolut doesn\'t count.</div>';
+    body += '<div class="section" style="margin:16px 4px 8px"><h3>1 · ' + (tb.at ? 'Bills until ' + dayLabel(tb.at.date) : 'Bills coming up') + '</h3><b>' + money(tb.need) + '</b></div>';
+    if (tb.at) {
+      body += '<div class="list">' + tb.outs.concat(tb.ins).sort(function (a, b) { return a.date - b.date || (a.out ? 0 : 1) - (b.out ? 0 : 1); }).map(function (x) {
+        var t = x.out ? esc(x.b.title) + (x.b.shared ? '<span class="tag sh">shared</span>' : '')
+          : x.who === 'p1' ? esc(cap(yours('p1'))) + ' ' + esc(x.it.label.toLowerCase()) + ' <span class="c-muted" style="font-weight:400">(bills part)</span>'
+          : esc(Yours('p2')) + ' transfer';
+        var est = x.inn && ((x.it && x.it.expected) || (x.e && x.e.src && x.e.src.expected));
+        return '<div class="item"><div class="grow"><div class="t">' + t + '</div><div class="s">' + dayLong(x.date) + '</div></div><div class="amt ' + (x.out ? 'c-red' : 'c-green') + '">' + (x.out ? '−' : '+ ' + (est ? '≈' : '')) + money(x.out || x.inn) + '</div></div>';
+      }).join('') + '</div>';
+      body += '<div class="card" style="background:var(--card2);padding:6px 14px;margin:0">' + whyRow('Bills going out', money(sum(tb.outs, 'out'))) + whyRow('Money for bills coming in', '− ' + money(sum(tb.ins, 'inn'))) +
+        '<div class="hr"></div>' + whyRow('Has to be there already', money(tb.need)) + '</div>';
+      body += '<div class="small mt-s">' + dayLong(tb.at.date) + ' is the tightest moment. Later bills are covered by the money that comes in before them.</div>';
+    } else body += '<div class="small">The money that still comes in covers every bill in the next two months.</div>';
+    body += '<div class="section" style="margin:20px 4px 8px"><h3>2 · Saved for yearly & quarterly bills</h3><b>' + money(tb.savedTotal) + '</b></div>';
+    if (tb.saved.length) {
+      body += '<div class="list">' + tb.saved.map(function (r) {
+        var f = +r.b.frequency || 1, done = clamp(Math.round(r.frac * f), 0, f);
+        return '<div class="item"><div class="grow"><div class="t">' + esc(r.b.title) + (r.b.shared ? '<span class="tag sh">shared</span>' : '') + '</div><div class="s">' + money(r.b.amount) + ' due ' + dayLong(r.due) + ' · ' + done + ' of ' + f + ' months put aside</div></div><div class="amt">' + money(r.need) + '</div></div>';
+      }).join('') + '</div><div class="small">Each month puts a part aside (a yearly bill: 1/12), so the full amount is there when it\'s due.</div>';
+    } else body += '<div class="small">No yearly or quarterly bills right now (or they\'re due before your next pay, so they\'re in part 1).</div>';
+    body += '<div class="hr" style="margin:16px 0 4px"></div>' + kv('<b style="color:#fff">Should have today</b>', money(tb.total));
     openSheet('Main bank', body);
   }
   function mainSheet() {

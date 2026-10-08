@@ -19,7 +19,9 @@ open http://localhost:8000). Without Firebase settings it offers **Preview on th
 - **Home is shorter**: only what needs attention now: what's open (and where it comes from), the last payment,
   the next two transfers, and the main bank. The 5-week calendar moved to **Bills → Coming up**.
 - **Main bank, not Revolut**: all pay lands in the main bank and the bills are paid from there. The "Main bank"
-  card says how much it should have today; Revolut doesn't count.
+  card says how much it should have today: (1) the bills up to the tightest moment (e.g. rent right after a
+  payday), minus the money for bills that still comes in before then, plus (2) what's saved by now for yearly &
+  quarterly bills. Tap *How?* for the full list. Revolut doesn't count.
 - **Payday shows one Revolut deposit**: keep X in the main bank, deposit Y on Revolut in one transfer, then split
   it over the pockets. "Whole month" shows the same for a normal month.
 - **Move Sabrina's money to the main bank**: her transfers land in Revolut, but the bills are paid from the main
