@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FairShare">
 <meta name="theme-color" content="#000000">
-<meta name="fairshare-version" content="2026-10-09b">
+<meta name="fairshare-version" content="2026-10-09c">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1483,6 +1483,18 @@ var app = (function () {
       '<div class="amt">' + (e.src && e.src.expected ? '≈ ' : '') + money(e.left + (carry || 0)) + '</div></div>';
   }
 
+  // "Rent (€915, 1 Nov) and the other bills until 4 Nov come to €1,230.97. Every pay keeps the same 30.9% ..."
+  function targetWhy(tb) {
+    var big = tb.outs.slice().sort(function (a, b) { return b.out - a.out; })[0];
+    var p1 = tb.ins.filter(function (x) { return x.who === 'p1'; }), p2 = tb.ins.filter(function (x) { return x.who === 'p2'; });
+    var comes = [];
+    if (p1.length) comes.push((meId() === 'p1' ? 'your ' : esc(mgr().name) + '\'s ') + (p1.length > 1 ? 'next pays' : 'next pay') + ' ' + money(sum(p1, 'inn')));
+    if (p2.length) comes.push(esc(ptr().name) + ' ' + money(sum(p2, 'inn')));
+    return '<b>Why?</b> ' + (big && tb.outs.length > 1 ? esc(big.b.title) + ' (' + money(big.out) + ', ' + dayLabel(big.date) + ') and the other bills until ' + dayLabel(tb.at.date) + ' come to '
+      : big ? esc(big.b.title) + ' on ' + dayLabel(big.date) + ' is ' : 'The bills come to ') + '<b>' + money(sum(tb.outs, 'out')) + '</b>. ' +
+      'Every pay keeps the same share for the bills (' + pct1(rateOf(currentMk())) + ' this month, plus your own bills), so before then only <b>' + money(sum(tb.ins, 'inn')) + '</b> more comes in' + (comes.length ? ' (' + comes.join(', ') + ')' : '') +
+      '. The rest is bill money from earlier pays that waits in the bank until then. Money on Revolut doesn\'t count.';
+  }
   function mainCard(L) {
     var tb = targetBalance(), last = lastMain(), s = ptr();
     var h = '<div class="card"><div class="hero-top"><div class="label">🏦 Main bank</div><button class="link sm" onclick="app.targetSheet()">How? ›</button></div>';
@@ -1491,7 +1503,7 @@ var app = (function () {
     h += '</div><div style="margin-top:10px">' +
       whyRow('<span class="c-muted" style="font-weight:400">' + (tb.at ? 'For the bills until ' + dayLabel(tb.at.date) : 'For the bills coming up') + '</span>', money(tb.need)) +
       (tb.saved.length ? whyRow('<span class="c-muted" style="font-weight:400">Saved for yearly & quarterly bills</span>', money(tb.savedTotal)) : '') + '</div>';
-    if (tb.at) h += '<div class="small mt-s">By ' + dayLong(tb.at.date) + ', ' + money(sum(tb.outs, 'out')) + ' of bills go out and only ' + money(sum(tb.ins, 'inn')) + ' for bills comes in before then. Money on Revolut doesn\'t count.</div>';
+    if (tb.at) h += '<div class="why">' + targetWhy(tb) + '</div>';
     if (last) {
       var gap = r2(+last.main - tb.total), old = daysSince(last.date);
       var inRev = r2(sum(unmoved(), 'amount')), soon = L.owed > 0.005 && !L.carry ? L.owed : 0;
@@ -2386,7 +2398,9 @@ var app = (function () {
   }
   function targetSheet() {
     var tb = targetBalance(), s = ptr(), mine = meId() === 'p1';
-    var body = '<div class="why" style="margin:-6px 0 6px">What has to be in ' + esc(bankLabel('p1')) + ' today so every bill can go out on time. It already counts the money for bills that still comes in: the bills part of ' + (mine ? 'your' : esc(mgr().name) + '\'s') + ' next pays and ' + esc(s.name) + '\'s transfers. Money on Revolut doesn\'t count.</div>';
+    var body = '<div class="why" style="margin:-6px 0 6px">What has to be in ' + esc(bankLabel('p1')) + ' today so every bill can go out on time.<br><br>' +
+      'Every salary, yours and ' + esc(s.name) + '\'s, big or small, puts the same share toward the bills (' + pct1(rateOf(currentMk())) + ' this month). So each pay pays its fair part, and big bills like rent are paid by money from several pays that waits in the bank until the bill is due.<br><br>' +
+      'This already counts the money for bills that still comes in: the bills part of ' + (mine ? 'your' : esc(mgr().name) + '\'s') + ' next pays and ' + esc(s.name) + '\'s transfers. Money on Revolut doesn\'t count.</div>';
     body += '<div class="section" style="margin:16px 4px 8px"><h3>1 · ' + (tb.at ? 'Bills until ' + dayLabel(tb.at.date) : 'Bills coming up') + '</h3><b>' + money(tb.need) + '</b></div>';
     if (tb.at) {
       body += '<div class="list">' + tb.outs.concat(tb.ins).sort(function (a, b) { return a.date - b.date || (a.out ? 0 : 1) - (b.out ? 0 : 1); }).map(function (x) {
