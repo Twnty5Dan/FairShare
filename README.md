@@ -24,6 +24,9 @@ open http://localhost:8000). Without Firebase settings it offers **Preview on th
   quarterly bills. Tap *How?* for the full list. Revolut doesn't count.
 - **Payday shows one Revolut deposit**: keep X in the main bank, deposit Y on Revolut in one transfer, then split
   it over the pockets. "Whole month" shows the same for a normal month.
+- **Savings account or Revolut, per pocket**: in Edit split, each pocket "lives in" Revolut or the savings account
+  (spaarrekening) at the main bank. Daniil's Savings is in the savings account, so Payday shows it as its own
+  step and the Revolut deposit only has the Revolut pockets. "Main bank" always means the zichtrekening.
 - **Move Sabrina's money to the main bank**: her transfers land in Revolut, but the bills are paid from the main
   bank. Home reminds you to move it over ("Done, moved" when you did). Settings → *When Sabrina sends money*.
 - **Updates show up by themselves**: the app checks for a newer version each time it's opened, and shows a
