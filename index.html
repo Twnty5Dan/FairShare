@@ -9,12 +9,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FairShare">
 <meta name="theme-color" content="#000000">
+<meta name="fairshare-version" content="2026-10-09">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <style>
-:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--card3:#3a3a3c;--sep:#38383a;--text:#fff;--muted:#8e8e93;--muted2:#636366;--blue:#0a84ff;--green:#30d158;--red:#ff453a;--orange:#ff9f0a;--p1:#0a84ff;--p2:#bf5af2}
+:root{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--card3:#3a3a3c;--sep:#38383a;--text:#fff;--muted:#a1a1a6;--muted2:#636366;--blue:#0a84ff;--green:#30d158;--red:#ff453a;--orange:#ff9f0a;--p1:#0a84ff;--p2:#bf5af2}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
 body{padding:max(env(safe-area-inset-top),16px) 0 calc(96px + env(safe-area-inset-bottom));overflow-x:hidden}
@@ -24,10 +25,10 @@ button{font-family:inherit}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:8px 2px 18px}
 h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin:0}
 .sub{color:var(--muted);font-size:14px}
-.small{font-size:12.5px;color:var(--muted);line-height:1.45}
+.small{font-size:14px;color:var(--muted);line-height:1.45}
 .small b,.w{color:#fff;font-weight:600}
 .card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:14px}
-.label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .big{font-size:40px;font-weight:800;letter-spacing:-1px;margin:2px 0 4px;font-variant-numeric:tabular-nums}
 .mid{font-size:22px;font-weight:700;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:14px;padding:14px 10px;font:600 16px -apple-system,system-ui,sans-serif;color:#fff;background:var(--blue);cursor:pointer;text-align:center}
@@ -47,22 +48,22 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin:0}
 .item.sel{background:rgba(10,132,255,.14)}
 .grow{flex:1;min-width:0}
 .t{font-weight:500;overflow-wrap:anywhere}
-.s{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.s{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.4}
 .amt{font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chev{color:var(--muted2);font-size:20px;line-height:1}
 .empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:14px}
 .section{display:flex;justify-content:space-between;align-items:center;margin:26px 4px 8px;gap:10px}
-.section h3{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.section h3{margin:0;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
 .link{background:none;border:0;color:var(--blue);font:500 15px -apple-system,system-ui,sans-serif;padding:4px;cursor:pointer;white-space:nowrap}
 .link.sm{font-size:14px}
 .bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--card2);margin:4px 0 12px;gap:2px}
 .bar div{height:100%}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
-.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;font-size:15px}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;font-size:16px}
 .kv>span:first-child{color:var(--muted)}
 .kv b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .hr{height:.5px;background:var(--sep);margin:8px 0}
-.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
 .pill.ok{background:rgba(48,209,88,.15);color:var(--green)}
 .pill.due{background:rgba(255,159,10,.15);color:var(--orange)}
 .pill.bad{background:rgba(255,69,58,.15);color:var(--red)}
@@ -77,7 +78,7 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin:0}
 .hero-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .flow{display:flex;align-items:center;gap:4px;min-width:0}
 .flow .arr{color:var(--muted);font-size:13px}
-.hero-lbl{font-size:14px;color:var(--muted);margin-top:14px}
+.hero-lbl{font-size:15px;color:var(--muted);margin-top:14px}
 .nx{display:flex;align-items:center;gap:12px;padding:7px 0}
 .nx-d{width:42px;height:42px;border-radius:12px;background:var(--card2);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;line-height:1}
 .nx-day{font-size:17px;font-weight:700}
@@ -109,18 +110,18 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin:0}
 .banner .btns{margin-top:10px}
 /* tab bar */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:space-around;background:rgba(28,28,30,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:.5px solid var(--sep);padding:7px 4px max(env(safe-area-inset-bottom),8px)}
-.tabs button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font:500 10px -apple-system,system-ui,sans-serif;flex:1;max-width:72px;min-width:0;padding:0;cursor:pointer;position:relative}
+.tabs button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font:500 11px -apple-system,system-ui,sans-serif;flex:1;max-width:72px;min-width:0;padding:0;cursor:pointer;position:relative}
 .tabs button.on{color:var(--blue)}
 .tabs svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabs .badge{position:absolute;top:-2px;left:calc(50% + 6px);width:9px;height:9px;border-radius:50%;background:var(--orange);border:2px solid #1c1c1e}
 /* history */
-.why{font-size:13.5px;color:var(--muted);line-height:1.45;margin-top:6px}
+.why{font-size:14.5px;color:var(--muted);line-height:1.45;margin-top:6px}
 .why b{color:#fff;font-weight:600}
 .why-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:14px;line-height:1.35}
 .why-row>span:first-child{min-width:0}
 .why-row>span:last-child{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}
-.h-st{font-size:12.5px;margin-top:3px;font-weight:500}
-.dv-sub{font-size:12.5px;color:var(--muted);margin:10px 0 0 50px}
+.h-st{font-size:13.5px;margin-top:3px;font-weight:500}
+.dv-sub{font-size:13.5px;color:var(--muted);margin:10px 0 0 50px}
 .dv-line.pocket{padding-left:16px}
 .dv-line.pocket .dv-ic{width:32px;height:32px;font-size:15px;border-radius:10px}
 /* sheet */
@@ -153,16 +154,16 @@ textarea{font-size:13px;font-family:ui-monospace,Menlo,monospace}
 .toast button{background:none;border:0;color:var(--blue);font:600 14px -apple-system,system-ui,sans-serif;padding:2px;cursor:pointer}
 .who{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .alert{display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--blue)}
-.alert.warn{border-left-color:var(--orange)}.alert.bad{border-left-color:var(--red)}.alert.good{border-left-color:var(--green)}
+.alert.warn{border-left-color:var(--orange)}.alert.news{border:1px solid rgba(10,132,255,.45);border-left:4px solid var(--blue)}.alert.bad{border-left-color:var(--red)}.alert.good{border-left-color:var(--green)}
 .sheet .alert{background:var(--card2)}
 .alert .ic{font-size:18px;line-height:1.2;flex:none}
-.alert .msg{flex:1;font-size:14px;line-height:1.4;min-width:0}
+.alert .msg{flex:1;font-size:15px;line-height:1.4;min-width:0}
 .alert .msg b{font-weight:600}
 .alert .acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .alert .acts button{border:0;border-radius:10px;padding:8px 12px;font:600 13px -apple-system,system-ui,sans-serif;background:var(--card2);color:#fff;cursor:pointer}
 .alert .acts button.pri{background:var(--blue)}
 .alert .acts button.go{background:var(--green);color:#000}
-.cal-day{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 16px 4px;display:flex;justify-content:space-between}
+.cal-day{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 16px 4px;display:flex;justify-content:space-between}
 .cal-day span{text-transform:none;letter-spacing:0;font-weight:500}
 .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--muted);margin-left:6px;vertical-align:1px;white-space:nowrap}
 .tag.sh{background:rgba(10,132,255,.15);color:var(--blue)}
@@ -330,11 +331,11 @@ var app = (function () {
   var LEGACY_POTS = ['food', 'fun', 'buffer'];
   function defaultPeople() {
     return [
-      { id: 'p1', role: 'manager', name: 'Daniil', payMode: 'dual', day1: 25, amount1: 1050, day2: 7, amount2: 950, offset2: 1, holidayShift: true, savingsPct: 10, pots: { food: 300, fun: 200, buffer: 50 }, leftover: 'savings', round: true, bank: 'Belfius', updatedAt: 0 },
-      { id: 'p2', role: 'partner', name: 'Sabrina', payMode: 'dual', day1: 20, amount1: 240, day2: 6, amount2: 1200, offset2: 1, holidayShift: false, savingsPct: 10, pots: { food: 250, fun: 150, buffer: 30 }, leftover: 'savings', round: true, bank: '', updatedAt: 0 }
+      { id: 'p1', role: 'manager', name: 'Daniil', payMode: 'dual', day1: 25, amount1: 1050, day2: 7, amount2: 950, offset2: 1, holidayShift: true, savingsPct: 10, pots: { food: 300, fun: 200, buffer: 50 }, leftover: 'savings', round: true, updatedAt: 0 },
+      { id: 'p2', role: 'partner', name: 'Sabrina', payMode: 'dual', day1: 20, amount1: 240, day2: 6, amount2: 1200, offset2: 1, holidayShift: false, savingsPct: 10, pots: { food: 250, fun: 150, buffer: 30 }, leftover: 'savings', round: true, updatedAt: 0 }
     ];
   }
-  function defaultSettings() { return { startMonth: ym(today()), openingBalance: 0, sendMode: 'each', sendSlot: '', revolutTag: '', updatedAt: 0 }; }
+  function defaultSettings() { return { startMonth: ym(today()), openingBalance: 0, sendMode: 'each', sendSlot: '', revolutTag: '', sendTo: 'revolut', updatedAt: 0 }; }
   function defaultData() {
     return {
       version: 26, people: defaultPeople(),
@@ -743,9 +744,9 @@ var app = (function () {
   function you(id) { return id === meId() ? 'You' : person(id).name; }
   function yours(id) { return id === meId() ? 'your' : person(id).name + '\'s'; }
   function Yours(id) { return id === meId() ? 'Your' : person(id).name + '\'s'; }
-  // The account where pay lands and the bills go out (Daniil: Belfius). The pockets are in Revolut.
-  function bankLabel(pid) { return String(person(pid).bank || '').trim() || 'main account'; }
-  function bankIsRevolut(pid) { return /revolut/i.test(person(pid).bank || ''); }
+  // All pay lands in the main bank, and the bills go out from there. The pockets are in Revolut.
+  function bankLabel(pid) { return pid === meId() ? 'your main bank' : person(pid).name + '\'s main bank'; }
+  function cap(x) { x = String(x); return x.charAt(0).toUpperCase() + x.slice(1); }
 
   /* ================= memo ================= */
   // Numbers are recalculated from scratch after every change; within one screen draw they're cached.
@@ -916,6 +917,13 @@ var app = (function () {
   var CARRY_MAX = 10; // € — smaller leftovers of already-paid paydays go with the next transfer
   function activeTransfers() { return D.transfers.filter(function (t) { return !t.deleted; }); }
   // Payments that count: made in this app, on or after the start month.
+  // Sabrina sends to Daniil's Revolut, but the bills are paid from his bank: that money has to be moved over.
+  function sendsToRevolut() { return D.settings.sendTo !== 'bank'; }
+  function unmoved() {
+    if (!sendsToRevolut()) return [];
+    var from = ymd(addDays(today(), -14)), to = ymd(today());
+    return countedTransfers().filter(function (t) { return t.from === 'p2' && !t.moved && String(t.date) >= from && String(t.date) <= to; });
+  }
   function countedTransfers() {
     var startDay = D.settings.startMonth + '-01';
     return activeTransfers().filter(function (t) { return !isLegacy(t) && String(t.date) >= startDay; });
@@ -1239,7 +1247,7 @@ var app = (function () {
       acts = '<div class="acts">' + (a.btns || []).map(function (b) { return '<button class="' + (b[2] || '') + '" onclick="' + b[1] + '">' + b[0] + '</button>'; }).join('') +
         (a.key ? '<button onclick="app.dismiss(\'' + a.key + '\')">' + (a.btns && a.btns[0][0] === 'Apply' ? 'Ignore' : 'Hide') + '</button>' : '') + '</div>';
     }
-    return '<div class="alert ' + (a.lvl === 'bad' ? 'bad' : a.lvl === 'warn' ? 'warn' : a.lvl === 'good' ? 'good' : '') + '"><div class="ic">' + a.ic + '</div><div class="msg">' + a.html + acts + '</div></div>';
+    return '<div class="alert ' + (a.lvl === 'bad' ? 'bad' : a.lvl === 'warn' ? 'warn' : a.lvl === 'good' ? 'good' : a.lvl === 'news' ? 'news' : '') + '"><div class="ic">' + a.ic + '</div><div class="msg">' + a.html + acts + '</div></div>';
   }
 
   /* ================= import / merge ================= */
@@ -1353,12 +1361,33 @@ var app = (function () {
     var h = '<div class="top"><div><div class="sub">' + esc(today().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })) + '</div><h1>FairShare</h1></div>' +
       '<div class="sub" style="text-align:right">' + esc(person(me).name) + '\'s phone<div id="sync-status" class="small" style="margin-top:3px">' + statusHtml() + '</div></div></div>';
     var adv = advice(me);
+    h += newsCard();
+    var um = mv ? unmoved() : [];
+    if (um.length) {
+      var umt = r2(sum(um, 'amount')), bk = esc(bankLabel('p1'));
+      h += alertHtml({ lvl: 'warn', ic: '🔁', html: '<b>Move ' + money(umt) + ' from Revolut to ' + bk + '.</b> ' + esc(ptr().name) + ' sent it to your Revolut' +
+        (um.length === 1 ? ' on ' + dayLong(parseYmd(um[0].date)) : ' (' + um.length + ' payments)') + ', but the shared bills are paid from ' + bk + '.',
+        btns: [['Done, moved', "app.markMoved('" + um.map(function (t) { return t.id; }).join(',') + "')", 'go'], ['Copy amount', 'app.copyAmt(' + umt + ')']] });
+    }
     h += adv.filter(function (a) { return a.top; }).map(alertHtml).join('');
     h += balanceCard(L);
     if (mv) h += mainCard(L);
     var rest = adv.filter(function (a) { return !a.top; });
     if (rest.length) h += section('For you') + rest.slice(0, 3).map(alertHtml).join('');
     return h;
+  }
+  // Shown once per phone after an update, so it's obvious what changed.
+  var NEWS = '2026-10';
+  function newsCard() {
+    if (lsGet('fairshare_news') === NEWS) return '';
+    var mv = isManagerView(), bk = esc(bankLabel('p1'));
+    return alertHtml({ lvl: 'news', ic: '✨', html: '<b>New in this update</b><br>' +
+      '• <b>History</b> tab (bottom bar): ' + (mv ? esc(ptr().name) + '\'s' : 'your') + ' paydays, what was sent and when.<br>' +
+      '• <b>Payday</b>: what stays in your main bank, then <b>one amount to deposit on Revolut</b>.<br>' +
+      (mv ? '• <b>Main bank</b> card: what it needs for the bills.<br>' : '') +
+      (mv && sendsToRevolut() ? '• A reminder to move ' + esc(ptr().name) + '\'s money from Revolut to ' + bk + '.<br>' : '') +
+      '• The 5-week calendar is now under <b>Bills</b>.',
+      btns: [['Open History', "app.newsSeen();app.go('history')", 'pri'], ['Got it', 'app.newsSeen()']] });
   }
   function dateTile(d) { return '<div class="nx-d"><div class="nx-day">' + d.getDate() + '</div><div class="nx-mon">' + monthName(ym(d), true) + '</div></div>'; }
 
@@ -1420,18 +1449,20 @@ var app = (function () {
 
   function mainCard(L) {
     var tb = targetBalance(), last = lastMain(), s = ptr(), bank = esc(bankLabel('p1'));
-    var h = '<div class="card"><div class="hero-top"><div class="label">🏦 ' + bank + '</div><button class="link sm" onclick="app.targetSheet()">Details ›</button></div>';
+    var h = '<div class="card"><div class="hero-top"><div class="label">🏦 Main bank</div><button class="link sm" onclick="app.targetSheet()">Details ›</button></div>';
     h += '<div class="cols mt-s"><div><div class="small">Should have today</div><div class="mid">' + money(tb.total) + '</div></div>';
     if (last) h += '<div style="text-align:right"><div class="small">You had ' + (daysSince(last.date) === 0 ? 'today' : 'on ' + dayLabel(parseYmd(last.date))) + '</div><div class="mid">' + money(+last.main) + '</div></div>';
     h += '</div><div class="small mt-s">The bills that leave ' + bank + ' until your next pay (' + dayLong(tb.nextPay) + '), plus what to set aside for quarterly & yearly bills. Money on Revolut doesn\'t count.</div>';
     if (last) {
       var gap = r2(+last.main - tb.total), old = daysSince(last.date);
+      var inRev = r2(sum(unmoved(), 'amount')), soon = L.owed > 0.005 && !L.carry ? L.owed : 0;
       if (gap >= 0) h += '<div class="state ok">✓ Covered, ' + money(gap) + ' spare</div>';
-      else if (L.owed > 0.005 && !L.carry && L.owed + gap >= 0) h += '<div class="state warn">' + money(-gap) + ' short until ' + esc(s.name) + ' sends ' + money(L.owed) + '</div>';
-      else h += '<div class="state bad">⚠️ ' + money(-gap) + ' short' + (L.owed > 0.005 && !L.carry ? ' (still ' + money(-gap - L.owed) + ' after ' + esc(s.name) + '\'s payment)' : '') + '</div>';
+      else if (inRev > 0.005 && gap + inRev >= 0) h += '<div class="state warn">' + money(-gap) + ' short until you move ' + esc(s.name) + '\'s ' + money(inRev) + ' from Revolut</div>';
+      else if (soon && gap + inRev + soon >= 0) h += '<div class="state warn">' + money(-gap) + ' short until ' + esc(s.name) + ' sends ' + money(soon) + (sendsToRevolut() ? ' and you move it over' : '') + '</div>';
+      else h += '<div class="state bad">⚠️ ' + money(-gap) + ' short' + (soon || inRev ? ' (still ' + money(-gap - inRev - soon) + ' after ' + esc(s.name) + '\'s money)' : '') + '</div>';
       if (old > 3) h += '<div class="small mt-s">That balance is ' + old + ' days old. Update it for an exact answer.</div>';
     }
-    return h + '<button class="btn gray sm mt" onclick="app.mainSheet()">Update ' + bank + ' balance</button></div>';
+    return h + '<button class="btn gray sm mt" onclick="app.mainSheet()">Update main bank balance</button></div>';
   }
 
   function timelineHtml(days) {
@@ -1577,7 +1608,8 @@ var app = (function () {
     if (x.from === 'p2') title = mv ? esc(s.name) + ' sent you' : 'You sent ' + esc(m.name);
     else title = mv ? 'You sent ' + esc(s.name) : esc(m.name) + ' sent you';
     return '<div class="item tap" onclick="app.transferSheet(\'' + x.id + '\')">' + dateTile(parseYmd(x.date)) +
-      '<div class="grow"><div class="t">' + (p.back ? '↩️ ' : '✅ ') + title + '</div><div class="s">' + coversText(p) + (x.note ? ' · ' + esc(x.note) : '') + '</div></div>' +
+      '<div class="grow"><div class="t">' + (p.back ? '↩️ ' : '✅ ') + title + '</div><div class="s">' + coversText(p) + (x.note ? ' · ' + esc(x.note) : '') + '</div>' +
+      (mv && !p.back && x.from === 'p2' && sendsToRevolut() ? (x.moved ? '<div class="h-st c-green">Moved to ' + esc(bankLabel('p1')) + ' ✓</div>' : unmoved().indexOf(x) > -1 ? '<div class="h-st c-orange">Still in Revolut: move it to ' + esc(bankLabel('p1')) + '</div>' : '') : '') + '</div>' +
       '<div class="amt ' + (p.back ? 'c-red' : 'c-green') + '">' + money(x.amount) + '</div></div>';
   }
   // The fair rule for one month, in words.
@@ -1694,7 +1726,7 @@ var app = (function () {
   function whyRow(left, right, cls) { return '<div class="why-row"><span>' + left + '</span><span' + (cls ? ' class="' + cls + '"' : '') + '>' + right + '</span></div>'; }
   // Keep in the bank → one deposit on Revolut → the pockets. o: { it: the pay (ticks only once it landed), month }
   function keepMoveSteps(dv, n, o) {
-    var pid = dv.pid, p = person(pid), mine = pid === meId(), bank = esc(bankLabel(pid)), inRev = bankIsRevolut(pid), whose = mine ? 'your' : esc(p.name) + '\'s';
+    var pid = dv.pid, p = person(pid), mine = pid === meId(), bank = esc(bankLabel(pid)), inRev = false, whose = mine ? 'your' : esc(p.name) + '\'s';
     var it = o.it, canTick = !!(it && it.logged), ticks = canTick ? (it.rec.ticks || {}) : {}, h = '';
     var keeps = dv.lines.filter(function (l) { return l.kind === 'keep'; });
     if (keeps.length) {
@@ -1750,7 +1782,7 @@ var app = (function () {
         else if (ev.paid > 0.005) sub = money(ev.paid) + ' already paid, ' + money(ev.left) + ' left';
         else sub = (mine ? 'Your' : esc(p.name) + '\'s') + ' part of the shared bills: ' + pct1(dv.rate) + ' of ' + (ev.kind === 'month' ? 'all pay this month' : 'this pay');
         if (ev && !paid && before > 0.005) sub += '<br><span class="c-orange">+ ' + money(before) + ' still open from before → ' + money(toSend) + ' in total</span>';
-        h += '<div class="send">' + lineHtml({ name: mine ? 'Send to ' + m.name : 'From ' + p.name, icon: '💸', color: P1C, amount: send.amount }, sub, paid ? '<span class="tick on" aria-label="Done">✓</span>' : '', '', toSend);
+        h += '<div class="send">' + lineHtml({ name: mine ? 'Send to ' + m.name + (sendsToRevolut() ? '\'s Revolut' : '') : 'From ' + p.name, icon: '💸', color: P1C, amount: send.amount }, sub, paid ? '<span class="tick on" aria-label="Done">✓</span>' : '', '', toSend);
         if (ev && !paid && it.date <= t) {
           h += mine ? '<div class="btns"><button class="btn sm go" onclick="app.quickSend(' + toSend + ')">Mark ' + money(toSend) + ' as sent</button><button class="btn sm gray" onclick="app.payRevolut(' + toSend + ')">' + (D.settings.revolutTag ? 'Open Revolut' : 'Copy amount') + '</button></div>'
             : '<div class="btns"><button class="btn sm go" onclick="app.quickSend(' + toSend + ')">Received ' + money(toSend) + '</button><button class="btn sm gray" onclick="app.transferSheet()">Other amount</button></div>';
@@ -1765,7 +1797,8 @@ var app = (function () {
       var L = ledger(), nx = L.events.filter(function (e) { return !e.past && e.left > 0.005; })[0], parts = [];
       if (L.owed > 0.005 && !L.carry) parts.push(money(L.owed) + ' that is open now');
       if (nx) parts.push((nx.src && nx.src.expected ? '≈' : '') + money(nx.left) + ' on ' + dayLabel(nx.date));
-      if (parts.length) h += '<div class="banner">➕ On top of this, ' + esc(ptr().name) + ' sends ' + (mine ? 'you ' : esc(m.name) + ' ') + parts.join(', then ') + ' for the shared bills (they\'re paid from ' + esc(bankLabel('p1')) + ').</div>';
+      if (parts.length) h += '<div class="banner">➕ On top of this, ' + esc(ptr().name) + ' sends ' + (mine ? 'you ' : esc(m.name) + ' ') + parts.join(', then ') +
+        (sendsToRevolut() ? ' to ' + (mine ? 'your' : esc(m.name) + '\'s') + ' Revolut for the shared bills. Move it to ' + esc(bankLabel('p1')) + ' when it lands.</div>' : ' for the shared bills (they\'re paid from ' + esc(bankLabel('p1')) + ').</div>');
     }
     if (dv.shortfall > 0.5) h += '<div class="state bad">⚠️ This pay doesn\'t cover the bills part: ' + money(dv.shortfall) + ' short.</div>';
     h += '<div class="small mt">This pay is ' + pct(dv.frac) + ' of ' + (mine ? 'your' : esc(p.name) + '\'s') + ' usual ' + money(dv.est) + ' a month, so pockets set in € a month get ' + pct(dv.frac) + ' of their monthly amount. Tap any amount to copy it.</div>';
@@ -1781,7 +1814,7 @@ var app = (function () {
     h += '<div style="margin:4px 0 2px">' +
       (send ? whyRow('💸 ' + (mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you'), money(send.amount)) : '') +
       whyRow('🏦 Keep in ' + esc(bankLabel(pid)), money(keepT)) +
-      (dv.moved > 0.004 ? whyRow(bankIsRevolut(pid) ? '🐷 Into the pockets' : '➡️ Deposit on Revolut', money(dv.moved), 'c-blue') : '') + '</div>';
+      (dv.moved > 0.004 ? whyRow('➡️ Deposit on Revolut', money(dv.moved), 'c-blue') : '') + '</div>';
     var n = 0;
     if (send) {
       h += stepHead(++n, mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you', money(send.amount));
@@ -1796,7 +1829,7 @@ var app = (function () {
   function viewBills() {
     var bills = activeBills().slice().sort(function (a, b) { return a.day - b.day; });
     var sp = split(currentMk()), total = sharedMonthlyNow(), me = meId(), t = today();
-    var h = '<div class="top"><div><h1>Bills</h1><div class="sub">Shared bills are paid from ' + esc(mgr().name) + '\'s ' + esc(bankLabel('p1')) + '.</div></div><button class="link" onclick="app.billSheet()">+ Add</button></div>';
+    var h = '<div class="top"><div><h1>Bills</h1><div class="sub">Shared bills are paid from ' + esc(bankLabel('p1')) + '.</div></div><button class="link" onclick="app.billSheet()">+ Add</button></div>';
     h += '<div style="margin-bottom:14px">' + seg('bills-view', [['soon', 'Coming up'], ['all', 'All bills']], billsView, 'billsViewPick') + '</div>';
     if (billsView === 'soon') return h + '<div class="small" style="margin:-4px 4px 10px">The next 5 weeks: bills, paydays and what ' + esc(ptr().name) + ' sends.</div>' + timelineHtml(35);
     h += '<div class="card">' + kv('Shared bills per month', money(total)) +
@@ -1860,7 +1893,7 @@ var app = (function () {
       cs.slice(0, 10).forEach(function (c) {
         var b = ciBal(c), parts = p.pockets.filter(function (k) { return b[k.id] != null; }).map(function (k) { return k.name + ' ' + money(b[k.id]); });
         Object.keys(b).forEach(function (id) { if (!byId(p.pockets, id)) parts.push(id + ' ' + money(b[id])); });
-        if (c.main != null && c.main !== '') parts.push(bankLabel('p1') + ' ' + money(+c.main));
+        if (c.main != null && c.main !== '') parts.push('Main bank ' + money(+c.main));
         h += '<div class="item tap" onclick="app.delCheckinSheet(\'' + c.id + '\')"><div class="grow"><div class="t">' + dayLong(parseYmd(c.date)) + '</div><div class="s">' + esc(parts.join(' · ') || 'Empty') + '</div></div></div>';
       });
       h += '</div>';
@@ -1892,7 +1925,7 @@ var app = (function () {
     if (pid === 'p1' && main != null) {
       var tb = targetBalance(), gap = main - tb.total;
       var bk = esc(bankLabel('p1'));
-      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: bk + ' covers every bill until ' + dayLabel(tb.nextPay) + ' (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>' + bk + ' is ' + money(-gap) + ' short</b> for the bills up to ' + dayLabel(tb.nextPay) + '.' });
+      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: cap(bk) + ' covers every bill until ' + dayLabel(tb.nextPay) + ' (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>' + cap(bk) + ' is ' + money(-gap) + ' short</b> for the bills up to ' + dayLabel(tb.nextPay) + '.' });
     }
     advice(pid).filter(function (a) { return a.ic === '💡'; }).forEach(function (a) { body += alertHtml(a); });
     openSheet('Check-in done', (body || '<div class="small">Saved.</div>') + '<button class="btn gray mt" onclick="app.closeSheet()">OK</button>');
@@ -1944,6 +1977,8 @@ var app = (function () {
       (s.payMode === 'irregular' ? '' : seg('send-mode', [['each', 'Every payday'], ['monthly', 'Once a month']], sendMode(), 'setSendMode')) +
       (sendMode() === 'monthly' && s.payMode === 'dual' ? '<div class="mt-s">' + seg('send-slot', schedule(s, currentMk()).map(function (x) { return [x.slot, 'On the ' + x.label.toLowerCase()]; }), sendSlot(), 'setSendSlot', 'mini') + '</div>' : '') +
       '<div class="small mt">' + sendExplain() + ' Either way the total per month is the same.</div>' +
+      ('<div class="hr" style="margin:14px 0"></div>' + field(esc(s.name) + ' sends it to ' + esc(m.name) + '\'s', seg('send-to', [['revolut', 'Revolut'], ['bank', 'Main bank']], sendsToRevolut() ? 'revolut' : 'bank', 'setSendTo')) +
+        '<div class="small" style="margin:-6px 4px 0">' + (sendsToRevolut() ? 'The bills are paid from ' + esc(bankLabel('p1')) + ', so ' + esc(m.name) + ' gets a reminder to move it over.' : 'It goes straight to the account the bills are paid from.') + '</div>') +
       '<div class="hr" style="margin:14px 0"></div>' +
       field(esc(m.name) + '\'s Revolut username (optional)', '<div class="row-in" style="display:flex;gap:8px"><input id="set-tag" placeholder="e.g. daniil" autocapitalize="none" autocorrect="off" value="' + esc(st.revolutTag || '') + '"><button class="btn gray sm" style="width:auto;padding:0 16px" onclick="app.saveTag()">Save</button></div>') +
       '<div class="small" style="margin:-6px 4px 0">Gives ' + esc(s.name) + ' an "Open Revolut" button (revolut.me link) with the amount already copied.</div></div>';
@@ -1969,7 +2004,7 @@ var app = (function () {
         '<div class="small">Old deposits show in the Payday tab (go back with ‹). Old settlements are history only and don\'t change the balance.</div>' : '') +
       '</div></details>';
     h += '<button class="btn gray" onclick="app.copySummary()">Copy a summary to share</button>';
-    h += '<div class="small" style="text-align:center;margin-top:18px">FairShare · remastered 2026</div>';
+    h += '<div class="small" style="text-align:center;margin-top:18px">FairShare · version ' + esc(appVersion()) + '</div>';
     return h;
   }
 
@@ -2058,6 +2093,14 @@ var app = (function () {
     save(); render();
   }
 
+  function markMoved(ids) {
+    var list = String(ids).split(',').map(function (id) { return byId(D.transfers, id); }).filter(Boolean), now = Date.now();
+    list.forEach(function (t) { t.moved = now; t.updatedAt = now; });
+    save(); render();
+    toast('Marked as moved to ' + bankLabel('p1'), ['Undo', function () { list.forEach(function (t) { t.moved = null; t.updatedAt = Date.now(); }); save(); render(); }]);
+  }
+  function setSendTo(v) { D.settings.sendTo = v === 'bank' ? 'bank' : 'revolut'; D.settings.updatedAt = Date.now(); save(); render(); }
+  function newsSeen() { lsSet('fairshare_news', NEWS); render(); }
   function quickSend(amount) {
     if (!(amount > 0)) return;
     var mine = meId() === 'p2', rec = { id: uid('t'), from: 'p2', amount: r2(amount), date: ymd(today()), note: '', updatedAt: Date.now() };
@@ -2078,6 +2121,7 @@ var app = (function () {
       (!t && L.owed > 0.005 ? '<div class="small" style="margin:-6px 4px 14px">Open right now: ' + money(L.owed) + '. Partial payments are fine.</div>' : '') +
       field('Date', '<input type="date" id="tr-date" value="' + esc(t ? t.date : ymd(today())) + '">') +
       field('Note (optional)', '<input id="tr-note" value="' + esc(t ? t.note : '') + '">') +
+      (sendsToRevolut() ? '<label class="toggle field"><div><div style="font-weight:500">Moved to ' + esc(bankLabel('p1')) + '</div><div class="small">Only for money ' + esc(ptr().name) + ' sent to Revolut</div></div><input type="checkbox" id="tr-moved"' + (t && t.moved ? ' checked' : '') + '></label>' : '') +
       '<button class="btn go" onclick="app.saveTransfer(\'' + (id || '') + '\')">' + (t ? 'Save' : 'Record payment') + '</button>' +
       (t ? '<button class="btn del mt" onclick="app.delTransfer(this,\'' + id + '\')">Delete</button>' : '');
     openSheet(t ? 'Edit payment' : 'Record payment', body);
@@ -2087,8 +2131,9 @@ var app = (function () {
     if (!(amt > 0)) return toast('Enter an amount');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = ymd(today());
     var rec = id ? byId(D.transfers, id) : null;
-    if (rec) { rec.from = from; rec.amount = r2(amt); rec.date = date; rec.note = val('tr-note').trim(); rec.updatedAt = Date.now(); }
-    else D.transfers.push({ id: uid('t'), from: from, amount: r2(amt), date: date, note: val('tr-note').trim(), updatedAt: Date.now() });
+    var mvEl = $('tr-moved'), moved = mvEl ? (mvEl.checked ? (rec && rec.moved) || Date.now() : null) : rec ? rec.moved || null : null;
+    if (rec) { rec.from = from; rec.amount = r2(amt); rec.date = date; rec.note = val('tr-note').trim(); rec.moved = moved; rec.updatedAt = Date.now(); }
+    else D.transfers.push({ id: uid('t'), from: from, amount: r2(amt), date: date, note: val('tr-note').trim(), moved: moved, updatedAt: Date.now() });
     save(); closeSheet(); render(); toast(rec ? 'Saved' : 'Payment recorded');
   }
   function delTransfer(btn, id) {
@@ -2131,8 +2176,6 @@ var app = (function () {
   function paySheet(pid) {
     var p = person(pid);
     var body = field('Name', '<input id="ps-name" value="' + esc(p.name) + '">') +
-      field('Bank where pay lands', '<input id="ps-bank" placeholder="e.g. Belfius" value="' + esc(p.bank || '') + '">') +
-      '<div class="small" style="margin:-6px 4px 14px">' + (p.role === 'manager' ? 'The shared bills are paid from here. ' : '') + 'The pockets are in Revolut, so the Payday tab tells you how much to deposit there.</div>' +
       field('How pay arrives', seg('ps-mode', [['dual', 'Voorschot + rest'], ['single', 'Once a month'], ['irregular', 'Random']], p.payMode, 'personModeChanged')) +
       '<div id="ps-fixed" style="' + (p.payMode === 'irregular' ? 'display:none' : '') + '">' +
       '<div class="btns"><div style="flex:0 0 90px">' + field('Day', '<input id="ps-d1" inputmode="numeric" value="' + esc(p.day1) + '">') + '</div>' + field('<span id="ps-a1l">' + (p.payMode === 'dual' ? 'Voorschot (about)' : 'Amount (about)') + '</span>', moneyInput('ps-a1', p.amount1, '')) + '</div>' +
@@ -2153,7 +2196,6 @@ var app = (function () {
     var p = person(pid), name = val('ps-name').trim();
     if (!name) return toast('Enter a name');
     p.name = name; p.payMode = segVal('ps-mode') || p.payMode;
-    p.bank = val('ps-bank').trim().slice(0, 30);
     p.day1 = clamp(parseInt(val('ps-d1'), 10) || 1, 1, 31);
     p.amount1 = r2(parseEuro(val('ps-a1')) || 0);
     p.day2 = clamp(parseInt(val('ps-d2'), 10) || 1, 1, 31);
@@ -2311,12 +2353,12 @@ var app = (function () {
       body += '<div class="item"><div class="grow"><div class="t">' + esc(r.b.title) + (r.b.shared ? '<span class="tag sh">shared</span>' : '') + '</div><div class="s">' + sub + '</div></div><div class="amt' + (r.need > 0.004 ? '' : ' c-muted') + '">' + money(r.need) + '</div></div>';
     });
     body += '</div>' + kv('Total needed today', money(tb.total));
-    openSheet(bankLabel('p1'), body);
+    openSheet('Main bank', body);
   }
   function mainSheet() {
     var last = lastMain();
     var bk = bankLabel('p1');
-    openSheet(bk + ' balance', field('What\'s in ' + esc(bk) + ' now?', moneyInput('mb-amt', '')) +
+    openSheet('Main bank balance', field('What\'s in ' + esc(bk) + ' now?', moneyInput('mb-amt', '')) +
       '<div class="small" style="margin:-6px 4px 14px">The account the bills are paid from. Not Revolut.' + (last ? ' Last time: ' + money(+last.main) + ' on ' + dayLabel(parseYmd(last.date)) + '.' : '') + '</div>' +
       '<button class="btn" onclick="app.saveMain()">Save</button>');
     setTimeout(function () { var e = $('mb-amt'); if (e) e.focus(); }, 300);
@@ -2395,7 +2437,19 @@ var app = (function () {
   }
 
   /* ================= boot ================= */
+  function appVersion() { var m = document.querySelector('meta[name="fairshare-version"]'); return m ? m.content : '?'; }
+  // Phones keep a copy of the app for a while. Each time it's opened, check for a newer version and load it.
+  function checkUpdate() {
+    if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
+    fetch('./?v=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
+      var m = t.match(/<meta name="fairshare-version" content="([^"]+)"/);
+      if (!m || m[1] === appVersion() || lsGet('fairshare_upd') === m[1]) return;
+      lsSet('fairshare_upd', m[1]); // only try once per version
+      location.replace(location.pathname + '?v=' + encodeURIComponent(m[1]) + location.hash);
+    }).catch(function () {});
+  }
   function init() {
+    checkUpdate();
     D = load();
     var h = String(location.hash || '').slice(1);
     if (TABS.indexOf(h) > -1) tab = h;
@@ -2405,6 +2459,7 @@ var app = (function () {
       if (document.visibilityState !== 'visible') return;
       if (cloud.dirty) push();
       if (renderedDay !== ymd(today())) softRender(); // the app was left open overnight
+      checkUpdate();
     });
   }
 
@@ -2429,7 +2484,7 @@ var app = (function () {
     monthSheet: monthSheet, balanceSheet: balanceSheet, targetSheet: targetSheet, mainSheet: mainSheet, saveMain: saveMain, refreshMonth: refreshMonth, setMe: setMe,
     saveCheckin: saveCheckin, delCheckinSheet: delCheckinSheet, delCheckin: delCheckin,
     checkinWho: function (v) { checkinFor = v; render(); },
-    saveTracking: saveTracking, setSendMode: setSendMode, setSendSlot: setSendSlot, saveTag: saveTag,
+    saveTracking: saveTracking, setSendMode: setSendMode, setSendSlot: setSendSlot, saveTag: saveTag, setSendTo: setSendTo, markMoved: markMoved, newsSeen: newsSeen,
     copySync: copySync, pasteSync: pasteSync, onPaste: onPaste, importSync: importSync, copySummary: copySummary,
     // for debugging in the browser console
     _data: function () { return D; }, _ledger: ledger, _history: payHistory, _split: split, _division: division, _target: targetBalance,

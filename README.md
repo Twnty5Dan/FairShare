@@ -17,11 +17,15 @@ open http://localhost:8000). Without Firebase settings it offers **Preview on th
   the shared bills · Paid on Thu 8 Oct"), every payment and which payday it was for, and what's coming next.
   Tap a payday to see exactly where the amount comes from. "By month" has the monthly split.
 - **Home is shorter**: only what needs attention now: what's open (and where it comes from), the last payment,
-  the next two transfers, and your bank account. The 5-week calendar moved to **Bills → Coming up**.
-- **Belfius, not Revolut**: the "main account" card is now your bank (Belfius), the account the bills are paid from.
-  Set the bank name per person in Settings → *Name's pay*.
-- **Payday shows one Revolut deposit**: keep X in Belfius, deposit Y on Revolut in one transfer, then split it
-  over the pockets. "Whole month" shows the same for a normal month.
+  the next two transfers, and the main bank. The 5-week calendar moved to **Bills → Coming up**.
+- **Main bank, not Revolut**: all pay lands in the main bank and the bills are paid from there. The "Main bank"
+  card says how much it should have today; Revolut doesn't count.
+- **Payday shows one Revolut deposit**: keep X in the main bank, deposit Y on Revolut in one transfer, then split
+  it over the pockets. "Whole month" shows the same for a normal month.
+- **Move Sabrina's money to the main bank**: her transfers land in Revolut, but the bills are paid from the main
+  bank. Home reminds you to move it over ("Done, moved" when you did). Settings → *When Sabrina sends money*.
+- **Updates show up by themselves**: the app checks for a newer version each time it's opened, and shows a
+  "New in this update" card once. Bigger, brighter text.
 - **Small differences roll over**: when a pay is confirmed at a slightly different amount, the month's % shifts a
   little. A difference under €10 on a payday that was already paid no longer shows as "owes you"; it's added to
   the next transfer.
