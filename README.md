@@ -18,6 +18,8 @@ open http://localhost:8000). Without Firebase settings it offers **Preview on th
   Tap a payday to see exactly where the amount comes from. "By month" has the monthly split.
 - **Home is shorter**: only what needs attention now: what's open (and where it comes from), the last payment,
   the next two transfers, and the main bank. The 5-week calendar moved to **Bills → Coming up**.
+- **Bills → Past**: the last 2 months, newest first: every date Sabrina's part was due (how much and why), whether
+  and when it was paid, her payments, and the bills that went out.
 - **Main bank, not Revolut**: all pay lands in the main bank and the bills are paid from there. The "Main bank"
   card says how much it should have today: (1) the bills up to the tightest moment (e.g. rent right after a
   payday), minus the money for bills that still comes in before then, plus (2) what's saved by now for yearly &

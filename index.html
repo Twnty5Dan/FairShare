@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FairShare">
 <meta name="theme-color" content="#000000">
-<meta name="fairshare-version" content="2026-10-09f">
+<meta name="fairshare-version" content="2026-10-09g">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1552,6 +1552,54 @@ var app = (function () {
     return h + '</div>' + (mv ? '<div class="small" style="padding:0 4px">"Total" adds up every bill leaving ' + esc(bankLabel('p1')) + ', so you can see how much has to be there by each date.</div>' : '');
   }
 
+  // The last weeks, newest first: when Sabrina's part was due (and if/when it was paid), her payments, and the bills that went out.
+  function pastHtml(days) {
+    var t = today(), from = addDays(t, -days), start = parseYmd(D.settings.startMonth + '-01'), me = meId(), mv = isManagerView(), s = ptr(), m = mgr();
+    if (start > from) from = start;
+    if (start > t) return '<div class="list"><div class="empty">Counting starts on 1 ' + monthName(D.settings.startMonth) + '.</div></div>';
+    var L = ledger(), H = payHistory(), ev = [];
+    for (var mk = ym(from); mk <= ym(t); mk = mkAdd(mk, 1)) {
+      activeBills().forEach(function (b) {
+        if (!isDueMonth(b, mkMonth0(mk) + 1)) return;
+        var d = billDateIn(b, mkYear(mk), mkMonth0(mk));
+        if (d >= from && d <= t && (b.shared || paidFrom(b) === me)) ev.push({ type: 'bill', date: d, b: b, o: 2 });
+      });
+    }
+    L.events.forEach(function (e) { if (e.past && e.date >= from) ev.push({ type: 'due', date: e.date, e: e, o: 1 }); });
+    H.pays.forEach(function (p) { var d = parseYmd(p.t.date); if (d >= from && d <= t) ev.push({ type: 'paid', date: d, p: p, o: 0 }); });
+    ev.sort(function (a, b) { return b.date - a.date || a.o - b.o; });
+    var due = sum(ev.filter(function (x) { return x.type === 'due'; }), function (x) { return x.e.amount; });
+    var sent = sum(ev.filter(function (x) { return x.type === 'paid' && !x.p.back; }), function (x) { return x.p.t.amount; });
+    var h = '<div class="card" style="padding:12px 16px">' +
+      kv((mv ? esc(s.name) + '\'s part' : 'Your part') + ' since ' + dayLabel(from), money(due)) +
+      kv(mv ? 'Sent to you' : 'You sent', money(sent), 'c-green') +
+      kv('Right now', L.owed > 0.005 && !L.carry ? money(L.owed) + ' open' : L.owed < -0.005 ? money(-L.owed) + ' paid ahead' : 'All square ✓', L.owed > 0.005 && !L.carry ? 'c-orange' : 'c-green') + '</div>';
+    if (!ev.length) return h + '<div class="list"><div class="empty">Nothing yet since ' + dayLabel(from) + '.</div></div>';
+    var lastDay = '';
+    h += '<div class="list">';
+    ev.forEach(function (x) {
+      var dk = ymd(x.date);
+      if (dk !== lastDay) { h += '<div class="cal-day">' + dayLong(x.date) + '<span>' + relDay(x.date) + '</span></div>'; lastDay = dk; }
+      if (x.type === 'due') {
+        var e = x.e, st = evStatus(e), est = e.src && e.src.expected;
+        h += '<div class="item tap" onclick="app.eventSheet(\'' + evKey(e) + '\')"><div class="avatar" style="background:' + tint(P2C, 0.22) + ';color:' + P2C + '">' + esc((s.name || '?').charAt(0).toUpperCase()) + '</div>' +
+          '<div class="grow"><div class="t">' + (mv ? esc(s.name) + ' should send you' : 'You should send ' + esc(m.name)) + '</div><div class="s">' + evWhy(e) + '</div>' +
+          '<div class="h-st ' + (st.cls === 'ok' ? 'c-green' : st.cls === 'due' ? 'c-orange' : 'c-muted') + '">' + st.text + '</div></div>' +
+          '<div style="text-align:right"><div class="amt">' + (est ? '≈ ' : '') + money(e.amount) + '</div><div style="margin-top:3px"><span class="pill ' + st.cls + '">' + st.pill + '</span></div></div></div>';
+      } else if (x.type === 'paid') {
+        var p = x.p, tr = p.t, title = tr.from === 'p2' ? (mv ? esc(s.name) + ' sent you' : 'You sent ' + esc(m.name)) : (mv ? 'You sent ' + esc(s.name) : esc(m.name) + ' sent you');
+        h += '<div class="item tap" onclick="app.transferSheet(\'' + tr.id + '\')"><div class="avatar" style="background:rgba(48,209,88,.15);color:var(--green)">✓</div>' +
+          '<div class="grow"><div class="t">' + title + '</div><div class="s">' + coversText(p) + (tr.note ? ' · ' + esc(tr.note) : '') + '</div></div>' +
+          '<div class="amt ' + (p.back ? 'c-red' : 'c-green') + '">' + money(tr.amount) + '</div></div>';
+      } else {
+        var b = x.b;
+        h += '<div class="item tap" onclick="app.billSheet(\'' + b.id + '\')"><div class="avatar" style="background:var(--card2);color:var(--muted)">€</div><div class="grow"><div class="t">' + esc(b.title) +
+          (b.shared ? '<span class="tag sh">shared</span>' : '<span class="tag">yours</span>') + '</div><div class="s">' + (b.shared && !mv ? 'Paid by ' + esc(m.name) : 'Went out of ' + esc(bankLabel(paidFrom(b)))) + '</div></div>' +
+          '<div class="amt c-red">−' + money(b.amount) + '</div></div>';
+      }
+    });
+    return h + '</div><div class="small" style="padding:0 4px">Tap a row for the details. Bills are shown with their amounts as they are set now.</div>';
+  }
   function splitCard(mk) {
     var sp = split(mk), sh = sharedTotal(mk), rate = sp.total > 0 ? sh / sp.total : 0;
     var h = section(monthOnly(mk) + ' · shared bills', '<button class="link" onclick="app.monthSheet(\'' + mk + '\')">Details</button>') + '<div class="card">';
@@ -1893,7 +1941,8 @@ var app = (function () {
     var bills = activeBills().slice().sort(function (a, b) { return a.day - b.day; });
     var sp = split(currentMk()), total = sharedMonthlyNow(), me = meId(), t = today();
     var h = '<div class="top"><div><h1>Bills</h1><div class="sub">Shared bills are paid from ' + esc(bankLabel('p1')) + '.</div></div><button class="link" onclick="app.billSheet()">+ Add</button></div>';
-    h += '<div style="margin-bottom:14px">' + seg('bills-view', [['soon', 'Coming up'], ['all', 'All bills']], billsView, 'billsViewPick') + '</div>';
+    h += '<div style="margin-bottom:14px">' + seg('bills-view', [['soon', 'Coming up'], ['past', 'Past'], ['all', 'All bills']], billsView, 'billsViewPick') + '</div>';
+    if (billsView === 'past') return h + '<div class="small" style="margin:-4px 4px 10px">The last 2 months: when ' + (isManagerView() ? esc(ptr().name) + '\'s part was due and when it was paid' : 'your part was due and when you paid it') + ', and the bills that went out.</div>' + pastHtml(62);
     if (billsView === 'soon') return h + '<div class="small" style="margin:-4px 4px 10px">The next 5 weeks: bills, paydays and what ' + esc(ptr().name) + ' sends.</div>' + timelineHtml(35);
     h += '<div class="card">' + kv('Shared bills per month', money(total)) +
       kv('<span class="dot" style="background:var(--p2)"></span>' + esc(ptr().name) + ' (' + pct(sp.p2) + ' this month)', money(total * sp.p2)) +
@@ -2564,7 +2613,7 @@ var app = (function () {
     payWho: function (v) { payState = { pid: v, key: null, mk: null, view: payState.view }; render(); },
     histViewPick: function (v) { histView = v === 'months' ? 'months' : 'pay'; render(); },
     histMore: function () { histAll = true; render(); },
-    billsViewPick: function (v) { billsView = v === 'all' ? 'all' : 'soon'; render(); },
+    billsViewPick: function (v) { billsView = v === 'all' || v === 'past' ? v : 'soon'; render(); },
     eventSheet: eventSheet,
     payView: function (v) { payState.view = v; render(); },
     payMonth: function (n) { var sel = findItem(payState.key) || defaultItem(payState.pid || meId()), mk = mkAdd(payState.mk || (sel ? ym(sel.date) : currentMk()), n); if (mk > mkAdd(currentMk(), 1)) return; payState.mk = mk; render(); },
