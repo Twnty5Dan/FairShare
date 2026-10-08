@@ -11,7 +11,22 @@
 Tip: to try it first on a computer, serve this folder locally (e.g. `python -m http.server` in the folder, then
 open http://localhost:8000). Without Firebase settings it offers **Preview on this device only**; paste a backup code (Settings → Backup) to see your real numbers.
 
-## What's new
+## What's new (October 2026)
+
+- **History tab**: every one of Sabrina's paydays in plain words ("rest of pay landed: €1,200 × 37.6% = €451.74 for
+  the shared bills · Paid on Thu 8 Oct"), every payment and which payday it was for, and what's coming next.
+  Tap a payday to see exactly where the amount comes from. "By month" has the monthly split.
+- **Home is shorter**: only what needs attention now: what's open (and where it comes from), the last payment,
+  the next two transfers, and your bank account. The 5-week calendar moved to **Bills → Coming up**.
+- **Belfius, not Revolut**: the "main account" card is now your bank (Belfius), the account the bills are paid from.
+  Set the bank name per person in Settings → *Name's pay*.
+- **Payday shows one Revolut deposit**: keep X in Belfius, deposit Y on Revolut in one transfer, then split it
+  over the pockets. "Whole month" shows the same for a normal month.
+- **Small differences roll over**: when a pay is confirmed at a slightly different amount, the month's % shifts a
+  little. A difference under €10 on a payday that was already paid no longer shows as "owes you"; it's added to
+  the next transfer.
+
+## Earlier
 
 - **Payday tab**: the Revolut split for each payday as a checklist: what to send, what to move into
   each pocket, and what stays in the main account. Tap any amount to copy it, tick pockets off as you move them.

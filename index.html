@@ -109,10 +109,20 @@ h1{font-size:32px;font-weight:700;letter-spacing:-.5px;margin:0}
 .banner .btns{margin-top:10px}
 /* tab bar */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:space-around;background:rgba(28,28,30,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:.5px solid var(--sep);padding:7px 4px max(env(safe-area-inset-bottom),8px)}
-.tabs button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font:500 10px -apple-system,system-ui,sans-serif;width:64px;cursor:pointer;position:relative}
+.tabs button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font:500 10px -apple-system,system-ui,sans-serif;flex:1;max-width:72px;min-width:0;padding:0;cursor:pointer;position:relative}
 .tabs button.on{color:var(--blue)}
 .tabs svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tabs .badge{position:absolute;top:-2px;left:38px;width:9px;height:9px;border-radius:50%;background:var(--orange);border:2px solid #1c1c1e}
+.tabs .badge{position:absolute;top:-2px;left:calc(50% + 6px);width:9px;height:9px;border-radius:50%;background:var(--orange);border:2px solid #1c1c1e}
+/* history */
+.why{font-size:13.5px;color:var(--muted);line-height:1.45;margin-top:6px}
+.why b{color:#fff;font-weight:600}
+.why-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:14px;line-height:1.35}
+.why-row>span:first-child{min-width:0}
+.why-row>span:last-child{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}
+.h-st{font-size:12.5px;margin-top:3px;font-weight:500}
+.dv-sub{font-size:12.5px;color:var(--muted);margin:10px 0 0 50px}
+.dv-line.pocket{padding-left:16px}
+.dv-line.pocket .dv-ic{width:32px;height:32px;font-size:15px;border-radius:10px}
 /* sheet */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
 .overlay.open{display:flex}
@@ -320,8 +330,8 @@ var app = (function () {
   var LEGACY_POTS = ['food', 'fun', 'buffer'];
   function defaultPeople() {
     return [
-      { id: 'p1', role: 'manager', name: 'Daniil', payMode: 'dual', day1: 25, amount1: 1050, day2: 7, amount2: 950, offset2: 1, holidayShift: true, savingsPct: 10, pots: { food: 300, fun: 200, buffer: 50 }, leftover: 'savings', round: true, updatedAt: 0 },
-      { id: 'p2', role: 'partner', name: 'Sabrina', payMode: 'dual', day1: 20, amount1: 240, day2: 6, amount2: 1200, offset2: 1, holidayShift: false, savingsPct: 10, pots: { food: 250, fun: 150, buffer: 30 }, leftover: 'savings', round: true, updatedAt: 0 }
+      { id: 'p1', role: 'manager', name: 'Daniil', payMode: 'dual', day1: 25, amount1: 1050, day2: 7, amount2: 950, offset2: 1, holidayShift: true, savingsPct: 10, pots: { food: 300, fun: 200, buffer: 50 }, leftover: 'savings', round: true, bank: 'Belfius', updatedAt: 0 },
+      { id: 'p2', role: 'partner', name: 'Sabrina', payMode: 'dual', day1: 20, amount1: 240, day2: 6, amount2: 1200, offset2: 1, holidayShift: false, savingsPct: 10, pots: { food: 250, fun: 150, buffer: 30 }, leftover: 'savings', round: true, bank: '', updatedAt: 0 }
     ];
   }
   function defaultSettings() { return { startMonth: ym(today()), openingBalance: 0, sendMode: 'each', sendSlot: '', revolutTag: '', updatedAt: 0 }; }
@@ -732,6 +742,10 @@ var app = (function () {
   }
   function you(id) { return id === meId() ? 'You' : person(id).name; }
   function yours(id) { return id === meId() ? 'your' : person(id).name + '\'s'; }
+  function Yours(id) { return id === meId() ? 'Your' : person(id).name + '\'s'; }
+  // The account where pay lands and the bills go out (Daniil: Belfius). The pockets are in Revolut.
+  function bankLabel(pid) { return String(person(pid).bank || '').trim() || 'main account'; }
+  function bankIsRevolut(pid) { return /revolut/i.test(person(pid).bank || ''); }
 
   /* ================= memo ================= */
   // Numbers are recalculated from scratch after every change; within one screen draw they're cached.
@@ -899,6 +913,7 @@ var app = (function () {
     }
     return out;
   }
+  var CARRY_MAX = 10; // € — smaller leftovers of already-paid paydays go with the next transfer
   function activeTransfers() { return D.transfers.filter(function (t) { return !t.deleted; }); }
   // Payments that count: made in this app, on or after the start month.
   function countedTransfers() {
@@ -923,6 +938,11 @@ var app = (function () {
       e.paid = r2(a); e.left = r2(e.amount - a); pool -= a;
     });
     var owed = r2(opening + sum(evs.filter(function (e) { return e.past; }), 'amount') - net);
+    // A pay confirmed at a slightly different amount changes the month's %, so a payday that was paid in full
+    // can end up a few euros short. That small rest isn't asked for now: it's added to the next transfer.
+    var openPast = evs.filter(function (e) { return e.past && e.left > 0.005; });
+    var carry = owed > 0.005 && owed < CARRY_MAX && !(opening - openingPaid > 0.005) && openPast.length && openPast.every(function (e) { return e.paid > 0.005; }) ? owed : 0;
+    openPast.forEach(function (e) { e.carried = carry > 0; });
     var rows = months().map(function (mk) {
       var em = evs.filter(function (e) { return e.mk === mk; });
       var past = em.filter(function (e) { return e.past; }), fut = em.filter(function (e) { return !e.past; });
@@ -933,7 +953,7 @@ var app = (function () {
       };
     });
     return (memo.ledger = {
-      events: evs, rows: rows, owed: owed, opening: opening, openingLeft: opening > 0 ? r2(opening - openingPaid) : 0,
+      events: evs, rows: rows, owed: owed, carry: carry, opening: opening, openingLeft: opening > 0 ? r2(opening - openingPaid) : 0,
       paidIn: paidIn, paidOut: paidOut, net: net
     });
   }
@@ -949,6 +969,76 @@ var app = (function () {
     if (e.kind === 'month') return monthOnly(e.mk) + ' part';
     return e.src.label + ' ' + dayLabel(e.date);
   }
+  function evKey(e) { return e.kind === 'pay' ? e.src.key : e.kind + ':' + e.mk; }
+  function findEvent(k) { return ledger().events.filter(function (e) { return evKey(e) === k; })[0] || null; }
+  // What a part was for, in words: "the rest of pay of 6 Oct", "October's part".
+  function evFor(e) {
+    if (e.kind === 'even') return monthOnly(e.mk) + ' (50/50)';
+    if (e.kind === 'month') return monthOnly(e.mk) + '\'s part';
+    return 'the ' + esc(e.src.label.toLowerCase()) + ' of ' + dayLabel(e.date);
+  }
+  // Where the amount comes from (HTML): "44.9% of Sabrina's rest of pay (€1,200.00, 6 Oct)".
+  function evWhy(e) {
+    if (e.kind === 'even') return 'half of ' + monthOnly(e.mk) + '\'s shared bills (no pay was known that month)';
+    if (e.kind === 'month') return esc(yours('p2')) + ' part of ' + monthOnly(e.mk) + ': ' + pct(split(e.mk).p2) + ' of ' + money(sharedTotal(e.mk)) + ' shared bills';
+    return pct1(e.rate) + ' of ' + esc(yours('p2')) + ' ' + esc(e.src.label.toLowerCase()) + ' (' + (e.src.expected ? '≈' : '') + money(e.src.amount) + ', ' + dayLabel(e.date) + ')';
+  }
+
+  /* ================= history: which payment paid off which payday ================= */
+  // The same rule as the ledger (payments pay off the oldest amount first), but payment by payment,
+  // so the history can say "paid on 8 Oct" and "this payment was for the pay of 6 Oct".
+  function payHistory() {
+    if (memo.hist) return memo.hist;
+    var L = ledger(), debts = [], cum = 0;
+    if (L.opening > 0.005) { debts.push({ opening: true, amount: L.opening, from: 0, to: L.opening, by: [] }); cum = L.opening; }
+    L.events.forEach(function (e) { var d = { e: e, amount: e.amount, from: cum, to: cum + e.amount, by: [] }; e.h = d; debts.push(d); cum += e.amount; });
+    var total = cum, P = L.opening < 0 ? -L.opening : 0;
+    debts.forEach(function (d) { if (P >= d.to - 0.005) d.settled = 'credit'; });
+    var trs = countedTransfers().slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.updatedAt || 0) - (b.updatedAt || 0); });
+    var pays = trs.map(function (t) {
+      var before = P, delta = t.from === 'p2' ? +t.amount : -t.amount;
+      P += delta;
+      var lo = Math.min(before, P), hi = Math.max(before, P), covers = [];
+      debts.forEach(function (d) {
+        var ov = Math.min(hi, d.to) - Math.max(lo, d.from);
+        if (ov > 0.005) { covers.push({ d: d, amount: r2(ov) }); if (delta > 0) d.by.push({ t: t, amount: r2(ov) }); }
+        if (P >= d.to - 0.005) { if (!d.settled) d.settled = t; } else d.settled = null;
+      });
+      return { t: t, covers: covers, extra: r2(Math.max(0, hi - Math.max(lo, total))), back: delta < 0 };
+    });
+    return (memo.hist = { debts: debts, pays: pays, total: total });
+  }
+  // "For the rest of pay of 6 Oct + €12.00 extra" (HTML)
+  function coversText(p) {
+    var tiny = 0, cov = p.covers.filter(function (c) { if (!p.back && c.amount < 1 && p.covers.length > 1) { tiny += c.amount; return false; } return true; });
+    var parts = cov.map(function (c) {
+      var d = c.d, what = d.opening ? 'what was open before ' + monthName(D.settings.startMonth, true) : evFor(d.e);
+      if (d.e && parseYmd(p.t.date) < d.e.date) what += ' (early)';
+      return what + (Math.abs(c.amount - d.amount) > 0.005 && !(d.e && d.e.carried) ? ': ' + money(c.amount) + ' of ' + money(d.amount) : '');
+    });
+    if (p.back) return parts.length ? 'Paid back. Opens ' + parts.join(' + ') + ' again' : 'Paid back';
+    if (tiny > 0.005) parts.push(money(tiny) + ' left from before');
+    if (p.extra > 0.005) parts.push(money(p.extra) + ' extra, counts toward the next one');
+    return parts.length ? 'For ' + parts.join(' + ') : 'Nothing was open yet';
+  }
+  function evStatus(e) {
+    payHistory();
+    var d = e.h, st = d && d.settled;
+    if (e.left <= 0.005) {
+      if (st && st !== 'credit') {
+        var by = d.by.slice().sort(function (a, b) { return b.amount - a.amount; }), main = by[0] ? by[0].t : st, pd = parseYmd(main.date);
+        var txt = (pd < e.date ? 'Paid early, on ' : 'Paid on ') + dayLong(pd);
+        if (main !== st) { var lastPart = d.by.filter(function (b) { return b.t === st; })[0]; txt += lastPart && lastPart.amount < 1 ? ' (last ' + money(lastPart.amount) + ' on ' + dayLabel(parseYmd(st.date)) + ')' : ' and ' + dayLabel(parseYmd(st.date)); }
+        return { cls: 'ok', pill: 'Paid ✓', text: txt };
+      }
+      return { cls: 'ok', pill: 'Paid ✓', text: st === 'credit' ? 'Covered by money sent before' : 'Paid' };
+    }
+    if (e.carried) return { cls: 'ok', pill: 'Paid ✓', text: 'Paid. ' + money(e.left) + ' difference goes with the next transfer' };
+    if (!e.past) return { cls: 'exp', pill: relDay(e.date), text: e.paid > 0.005 ? money(e.paid) + ' already paid early, ' + money(e.left) + ' to go' : 'Due ' + relDay(e.date) };
+    if (e.paid > 0.005) return { cls: 'due', pill: money(e.left) + ' open', text: money(e.paid) + ' paid, ' + money(e.left) + ' still open' };
+    return { cls: 'due', pill: money(e.left) + ' open', text: 'Not paid yet, due since ' + dayLong(e.date) };
+  }
+  function lastPayment() { var ps = payHistory().pays.filter(function (p) { return !p.back; }); return ps[ps.length - 1] || null; }
 
   /* ================= Revolut split for one payment ================= */
   // Order: shared bills (send / keep) → own bills → pockets top to bottom → leftover.
@@ -990,10 +1080,10 @@ var app = (function () {
       var x = pockets[k.id];
       if (x.give > 0.004 || x.short > 0.5) lines.push({ key: k.id, kind: 'move', name: k.name, icon: k.icon, color: k.color, amount: x.give, x: x, k: k });
     });
-    if (keep > 0.004) lines.push({ key: 'main', kind: 'keep', name: to === 'main' ? 'Left over' : 'Small change', icon: '🏦', color: '#636366', amount: keep });
+    if (keep > 0.004) lines.push({ key: 'main', kind: 'keep', name: to === 'main' ? 'Left over' : 'Small change', icon: '🪙', color: '#636366', amount: keep });
     return {
       pid: pid, amount: amount, date: date, mk: mk, rate: rate, frac: frac, est: est, share: sp[pid], bills: bills, own: own,
-      pockets: pockets, keep: keep, lines: lines, shortfall: shortfall, event: ev, anchor: anchor, leftTo: to,
+      pockets: pockets, keep: keep, moved: r2(moved), lines: lines, shortfall: shortfall, event: ev, anchor: anchor, leftTo: to,
       next: opts.month ? null : nextPayday(pid, date)
     };
   }
@@ -1001,7 +1091,7 @@ var app = (function () {
     if (!it.logged) return false;
     var dv = division(pid, it.amount, it.date, { key: it.key }), ticks = it.rec.ticks || {};
     var movesDone = dv.lines.every(function (l) { return l.kind !== 'move' || l.amount <= 0.004 || ticks[l.key]; });
-    return movesDone && (!dv.event || dv.event.left <= 0.005);
+    return movesDone && (!dv.event || dv.event.left <= 0.005 || dv.event.carried);
   }
 
   /* ================= main account ================= */
@@ -1189,8 +1279,8 @@ var app = (function () {
   }
 
   /* ================= UI plumbing ================= */
-  var TABS = ['home', 'payday', 'bills', 'checkin', 'settings'];
-  var tab = 'home', checkinFor = null, toastTimer = null, toastFn = null, renderedDay = null;
+  var TABS = ['home', 'payday', 'history', 'bills', 'checkin', 'settings'];
+  var tab = 'home', histView = 'pay', histAll = false, billsView = 'soon', checkinFor = null, toastTimer = null, toastFn = null, renderedDay = null;
   var payState = { pid: null, key: null, mk: null, view: 'pay' };
   function toast(msg, action) {
     var t = $('toast');
@@ -1232,12 +1322,13 @@ var app = (function () {
   var ICONS = {
     home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
     payday: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4M12 12H3"/></svg>',
+    history: '<svg viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4.5h4.5"/><path d="M12 7.5V12l3 2"/></svg>',
     bills: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3"/></svg>',
     checkin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 10"/></svg>',
     settings: '<svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>'
   };
   function renderTabs() {
-    var items = [['home', 'Home'], ['payday', 'Payday'], ['bills', 'Bills'], ['checkin', 'Check-in'], ['settings', 'Settings']];
+    var items = [['home', 'Home'], ['payday', 'Payday'], ['history', 'History'], ['bills', 'Bills'], ['checkin', 'Check-in'], ['settings', 'Settings']];
     var payBadge = payItemsAround(meId()).some(function (it) { var a = daysBetween(it.date, today()); return a >= 0 && a <= 4 && (it.expected || !divDone(meId(), it)); });
     $('tabs').innerHTML = items.map(function (it) {
       return '<button class="' + (tab === it[0] ? 'on' : '') + '" onclick="app.go(\'' + it[0] + '\')">' + ICONS[it[0]] + '<span>' + it[1] + '</span>' + (it[0] === 'payday' && payBadge ? '<i class="badge"></i>' : '') + '</button>';
@@ -1248,7 +1339,7 @@ var app = (function () {
     if (ready()) ensureSnapshots();
     renderedDay = ymd(today());
     renderTabs();
-    $('view').innerHTML = tab === 'payday' ? viewPayday() : tab === 'bills' ? viewBills() : tab === 'checkin' ? viewCheckin() : tab === 'settings' ? viewSettings() : viewHome();
+    $('view').innerHTML = tab === 'payday' ? viewPayday() : tab === 'history' ? viewHistory() : tab === 'bills' ? viewBills() : tab === 'checkin' ? viewCheckin() : tab === 'settings' ? viewSettings() : viewHome();
   }
   function go(t) {
     tab = TABS.indexOf(t) > -1 ? t : 'home'; closeSheet(); render(); window.scrollTo(0, 0);
@@ -1256,6 +1347,7 @@ var app = (function () {
   }
 
   /* ================= HOME ================= */
+  // Only what needs attention now. The rest lives in History (what was paid, by month) and Bills (coming up).
   function viewHome() {
     var L = ledger(), me = meId(), mv = isManagerView();
     var h = '<div class="top"><div><div class="sub">' + esc(today().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })) + '</div><h1>FairShare</h1></div>' +
@@ -1265,70 +1357,81 @@ var app = (function () {
     h += balanceCard(L);
     if (mv) h += mainCard(L);
     var rest = adv.filter(function (a) { return !a.top; });
-    if (rest.length) h += section('For you') + rest.slice(0, 4).map(alertHtml).join('');
-    h += section('Next 5 weeks', '<button class="link" onclick="app.go(\'bills\')">All bills</button>') + timelineHtml(35);
-    h += splitCard(currentMk());
-    h += monthsList(L);
+    if (rest.length) h += section('For you') + rest.slice(0, 3).map(alertHtml).join('');
     return h;
   }
+  function dateTile(d) { return '<div class="nx-d"><div class="nx-day">' + d.getDate() + '</div><div class="nx-mon">' + monthName(ym(d), true) + '</div></div>'; }
 
   function balanceCard(L) {
     var mv = isManagerView(), m = mgr(), s = ptr(), owed = L.owed;
     var h = '<div class="card"><div class="hero-top"><div class="flow">' + avatar('p2', true) + '<span class="arr">→</span>' + avatar('p1', true) +
       '<span class="label" style="margin-left:6px">' + (mv ? esc(s.name) + ' → you' : 'You → ' + esc(m.name)) + '</span></div>' +
-      '<button class="link sm" onclick="app.balanceSheet()">How? ›</button></div>';
+      '<button class="link sm" onclick="app.go(\'history\')">History ›</button></div>';
     if (D.settings.startMonth > currentMk())
       return h + '<div class="hero-lbl">Not counting yet</div><div class="big">—</div><div class="small">Counting starts on 1 ' + monthName(D.settings.startMonth) + '. Change it in Settings → Tracking.</div></div>';
     var open = L.events.filter(function (e) { return e.past && e.left > 0.005; });
-    if (owed > 0.005) {
-      var est = open.some(function (e) { return e.src && e.src.expected; });
-      var parts = open.map(function (e) { return esc(evLabel(e)) + ' <b>' + money(e.left) + '</b>'; });
-      if (L.openingLeft > 0.005) parts.unshift('Before ' + monthName(D.settings.startMonth, true) + ' <b>' + money(L.openingLeft) + '</b>');
-      if (L.paidOut > 0.005 && !parts.length) parts.push('Includes ' + money(L.paidOut) + ' ' + esc(m.name) + ' sent to ' + esc(s.name));
+    if (owed > 0.005 && !L.carry) {
+      var est = open.some(function (e) { return e.src && e.src.expected; }), rows = [];
+      if (L.openingLeft > 0.005) rows.push(['Still open from before ' + monthName(D.settings.startMonth, true), L.openingLeft]);
+      open.forEach(function (e) {
+        var w = evWhy(e);
+        rows.push([w.charAt(0).toUpperCase() + w.slice(1) + (e.paid > 0.005 ? '. ' + money(e.paid) + ' of ' + money(e.amount) + ' already paid' : ''), e.left]);
+      });
+      var rest = r2(owed - sum(rows, function (r) { return r[1]; }));
+      if (rest > 0.005) rows.push([esc(m.name) + ' sent ' + esc(s.name) + ' money back', rest]);
       h += '<div class="hero-lbl">' + (mv ? esc(s.name) + ' owes you now' : 'Send ' + esc(m.name) + ' now') + '</div>' +
         '<div class="big c-orange">' + (est ? '≈ ' : '') + money(owed) + '</div>' +
-        '<div class="small">' + (parts.length > 3 ? parts.slice(0, 2).join(' · ') + ' · +' + (parts.length - 2) + ' more' : parts.join(' · ')) + '</div>' +
+        '<div class="small" style="margin-top:2px">Where it comes from:</div>' +
+        rows.slice(0, 3).map(function (r) { return whyRow('<span class="c-muted" style="font-weight:400">' + r[0] + '</span>', money(r[1])); }).join('') +
+        (rows.length > 3 ? '<div class="small">+ ' + (rows.length - 3) + ' more in History</div>' : '') +
         (est ? '<div class="small c-orange" style="margin-top:4px">Uses the expected pay. Confirm the real amount for the exact number.</div>' : '');
       h += mv ? '<div class="btns mt"><button class="btn go" onclick="app.quickSend(' + r2(owed) + ')">Mark as received</button><button class="btn gray" onclick="app.transferSheet()">Other amount</button></div>'
         : '<div class="btns mt"><button class="btn go" onclick="app.quickSend(' + r2(owed) + ')">I sent it</button><button class="btn gray" onclick="app.payRevolut(' + r2(owed) + ')">' + (D.settings.revolutTag ? 'Open Revolut' : 'Copy amount') + '</button></div>';
-    } else if (owed < -0.005) {
-      h += '<div class="hero-lbl">' + (mv ? esc(s.name) + ' is ahead by' : 'You\'re ahead by') + '</div><div class="big c-green">' + money(-owed) + '</div>' +
-        '<div class="small">More was sent than needed so far. It comes off the next payment below.</div>';
     } else {
-      h += '<div class="hero-lbl">Right now</div><div class="big c-green">All square ✓</div><div class="small">' + (mv ? 'Nothing open.' : 'Nothing to send right now.') + '</div>';
+      if (owed <= -CARRY_MAX) h += '<div class="hero-lbl">' + (mv ? esc(s.name) + ' is ahead by' : 'You\'re ahead by') + '</div><div class="big c-green">' + money(-owed) + '</div>' +
+        '<div class="small">More was sent than needed so far. It comes off the next payment below.</div>';
+      else h += '<div class="hero-lbl">Right now</div><div class="big c-green">All square ✓</div><div class="small">' +
+        (L.carry ? 'Only a small difference of ' + money(L.carry) + ' is left. It\'s added to the next transfer.'
+          : owed < -0.005 ? money(-owed) + ' extra was sent. It comes off the next transfer.'
+          : mv ? 'Nothing open.' : 'Nothing to send right now.') + '</div>';
+      var lp = lastPayment();
+      if (lp) h += '<div class="why">Last payment: ' + (lp.t.from === 'p2' ? (mv ? esc(s.name) + ' sent you' : 'you sent ' + esc(m.name)) : (mv ? 'you sent ' + esc(s.name) : esc(m.name) + ' sent you')) +
+        ' <b>' + money(lp.t.amount) + '</b> on ' + dayLong(parseYmd(lp.t.date)) + '. ' + coversText(lp) + '.</div>';
     }
-    var nx = L.events.filter(function (e) { return !e.past && e.left > 0.005; }).slice(0, 3);
+    var nx = L.events.filter(function (e) { return !e.past && e.left > 0.005; }).slice(0, 2);
     if (nx.length) {
-      h += '<div class="hr" style="margin:14px 0 8px"></div><div class="label">Coming up</div>';
-      nx.forEach(function (e) { h += nextRow(e, mv); });
+      h += '<div class="hr" style="margin:14px 0 8px"></div><div class="label">Next ' + (mv ? 'from ' + esc(s.name) : 'to send') + '</div>';
+      nx.forEach(function (e, i) { h += nextRow(e, i === 0 ? L.carry : 0); });
     }
-    if (owed <= 0.005) h += '<button class="btn gray sm mt" onclick="app.transferSheet()">Record a payment</button>';
+    if (owed <= 0.005 || L.carry) h += '<button class="btn gray sm mt" onclick="app.transferSheet()">Record a payment</button>';
     return h + '</div>';
   }
-  function nextRow(e, mv) {
-    var s = ptr(), what;
-    if (e.kind === 'month') what = (mv ? esc(s.name) + '\'s' : 'Your') + ' part of ' + monthOnly(e.mk) + ' · after the ' + esc(e.src.label.toLowerCase());
-    else what = 'After ' + (mv ? esc(s.name) + '\'s' : 'your') + ' ' + esc(e.src.label.toLowerCase());
-    if (e.paid > 0.005) what += ' · ' + money(e.paid) + ' already covered';
-    return '<div class="nx"><div class="nx-d"><div class="nx-day">' + e.date.getDate() + '</div><div class="nx-mon">' + monthName(ym(e.date), true) + '</div></div>' +
-      '<div class="grow"><div class="t">' + e.date.toLocaleDateString('en-GB', { weekday: 'long' }) + ' · ' + relDay(e.date) + '</div><div class="s">' + what + '</div></div>' +
-      '<div class="amt">' + (e.src && e.src.expected ? '≈ ' : '') + money(e.left) + '</div></div>';
+  function nextRow(e, carry) {
+    var what;
+    if (e.kind === 'month') what = monthOnly(e.mk) + '\'s part, when ' + esc(yours('p2')) + ' ' + esc(e.src.label.toLowerCase()) + ' lands';
+    else if (e.kind === 'pay') what = pct1(e.rate) + ' of ' + esc(yours('p2')) + ' ' + esc(e.src.label.toLowerCase()) + ' (' + (e.src.expected ? '≈' : '') + money(e.src.amount) + ')';
+    else what = evWhy(e);
+    if (e.paid > 0.005) what += ' · ' + money(e.paid) + ' already paid';
+    if (carry > 0.005) what += ' · + ' + money(carry) + ' left from before';
+    return '<div class="nx tap" onclick="app.eventSheet(\'' + evKey(e) + '\')">' + dateTile(e.date) +
+      '<div class="grow"><div class="t">' + dayLong(e.date) + ' · ' + relDay(e.date) + '</div><div class="s">' + what + '</div></div>' +
+      '<div class="amt">' + (e.src && e.src.expected ? '≈ ' : '') + money(e.left + (carry || 0)) + '</div></div>';
   }
 
   function mainCard(L) {
-    var tb = targetBalance(), last = lastMain(), s = ptr();
-    var h = '<div class="card"><div class="hero-top"><div class="label">Main account</div><button class="link sm" onclick="app.targetSheet()">Details ›</button></div>';
+    var tb = targetBalance(), last = lastMain(), s = ptr(), bank = esc(bankLabel('p1'));
+    var h = '<div class="card"><div class="hero-top"><div class="label">🏦 ' + bank + '</div><button class="link sm" onclick="app.targetSheet()">Details ›</button></div>';
     h += '<div class="cols mt-s"><div><div class="small">Should have today</div><div class="mid">' + money(tb.total) + '</div></div>';
-    if (last) h += '<div style="text-align:right"><div class="small">You had on ' + dayLabel(parseYmd(last.date)) + '</div><div class="mid">' + money(+last.main) + '</div></div>';
-    h += '</div><div class="small mt-s">Every bill from your account up to your next pay (' + dayLong(tb.nextPay) + '), plus what to put aside for quarterly & yearly bills.</div>';
+    if (last) h += '<div style="text-align:right"><div class="small">You had ' + (daysSince(last.date) === 0 ? 'today' : 'on ' + dayLabel(parseYmd(last.date))) + '</div><div class="mid">' + money(+last.main) + '</div></div>';
+    h += '</div><div class="small mt-s">The bills that leave ' + bank + ' until your next pay (' + dayLong(tb.nextPay) + '), plus what to set aside for quarterly & yearly bills. Money on Revolut doesn\'t count.</div>';
     if (last) {
       var gap = r2(+last.main - tb.total), old = daysSince(last.date);
       if (gap >= 0) h += '<div class="state ok">✓ Covered, ' + money(gap) + ' spare</div>';
-      else if (L.owed > 0.005 && L.owed + gap >= 0) h += '<div class="state warn">' + money(-gap) + ' short until ' + esc(s.name) + ' sends ' + money(L.owed) + '</div>';
-      else h += '<div class="state bad">⚠️ ' + money(-gap) + ' short' + (L.owed > 0.005 ? ' (still ' + money(-gap - L.owed) + ' after ' + esc(s.name) + '\'s payment)' : '') + '</div>';
-      if (old > 7) h += '<div class="small mt-s">That balance is ' + old + ' days old.</div>';
+      else if (L.owed > 0.005 && !L.carry && L.owed + gap >= 0) h += '<div class="state warn">' + money(-gap) + ' short until ' + esc(s.name) + ' sends ' + money(L.owed) + '</div>';
+      else h += '<div class="state bad">⚠️ ' + money(-gap) + ' short' + (L.owed > 0.005 && !L.carry ? ' (still ' + money(-gap - L.owed) + ' after ' + esc(s.name) + '\'s payment)' : '') + '</div>';
+      if (old > 3) h += '<div class="small mt-s">That balance is ' + old + ' days old. Update it for an exact answer.</div>';
     }
-    return h + '<button class="btn gray sm mt" onclick="app.mainSheet()">Update balance</button></div>';
+    return h + '<button class="btn gray sm mt" onclick="app.mainSheet()">Update ' + bank + ' balance</button></div>';
   }
 
   function timelineHtml(days) {
@@ -1348,22 +1451,22 @@ var app = (function () {
       }
       if (e.type === 'send') {
         var ev1 = e.e;
-        h += '<div class="item tap" onclick="app.balanceSheet()"><div class="avatar" style="background:' + tint(P1C) + ';color:var(--blue)">⇄</div><div class="grow"><div class="t">' + (mv ? esc(s.name) + ' sends you' : 'You send ' + esc(m.name)) + '</div>' +
-          '<div class="s">' + (ev1.kind === 'month' ? 'Part of ' + monthOnly(ev1.mk) + '\'s shared bills' : pct1(ev1.rate) + ' of the ' + esc(ev1.src.label.toLowerCase())) + (ev1.paid > 0.005 ? ' · ' + money(ev1.paid) + ' covered' : '') + '</div></div>' +
+        h += '<div class="item tap" onclick="app.eventSheet(\'' + evKey(ev1) + '\')"><div class="avatar" style="background:' + tint(P1C) + ';color:var(--blue)">⇄</div><div class="grow"><div class="t">' + (mv ? esc(s.name) + ' sends you' : 'You send ' + esc(m.name)) + '</div>' +
+          '<div class="s">' + (ev1.kind === 'month' ? 'Part of ' + monthOnly(ev1.mk) + '\'s shared bills' : pct1(ev1.rate) + ' of ' + esc(yours('p2')) + ' ' + esc(ev1.src.label.toLowerCase())) + (ev1.paid > 0.005 ? ' · ' + money(ev1.paid) + ' already paid' : '') + '</div></div>' +
           '<div class="amt c-blue">' + (ev1.src && ev1.src.expected ? '≈ ' : '') + money(ev1.left) + '</div></div>';
         return;
       }
       var b = e.b, from = paidFrom(b), by = workdayBefore(e.date), sub;
       if (from === 'p1' && mv) running += +b.amount;
       if (b.shared) {
-        sub = mv ? 'In your account by <b>' + dayLabel(by) + '</b>' : 'Paid by ' + esc(m.name);
+        sub = mv ? 'In ' + esc(bankLabel('p1')) + ' by <b>' + dayLabel(by) + '</b>' : 'Paid by ' + esc(m.name);
         sub += (+b.frequency || 1) === 1 ? ' · ' + (mv ? esc(s.name) + '\'s part ' : 'your part ') + money(b.amount * sp.p2) : ' · spread monthly';
-      } else sub = 'In your account by <b>' + dayLabel(by) + '</b>';
+      } else sub = 'In ' + esc(bankLabel(from)) + ' by <b>' + dayLabel(by) + '</b>';
       h += '<div class="item tap" onclick="app.billSheet(\'' + b.id + '\')"><div class="avatar" style="background:var(--card2);color:var(--muted)">€</div><div class="grow"><div class="t">' + esc(b.title) +
         (b.shared ? '<span class="tag sh">shared</span>' : '<span class="tag">yours</span>') + '</div><div class="s">' + sub + '</div></div>' +
         '<div style="text-align:right"><div class="amt c-red">−' + money(b.amount) + '</div>' + (mv && from === 'p1' ? '<div class="s">total ' + money(running) + '</div>' : '') + '</div></div>';
     });
-    return h + '</div>' + (mv ? '<div class="small" style="padding:0 4px">"Total" adds up every bill leaving your account, so you can see how much has to be there by each date.</div>' : '');
+    return h + '</div>' + (mv ? '<div class="small" style="padding:0 4px">"Total" adds up every bill leaving ' + esc(bankLabel('p1')) + ', so you can see how much has to be there by each date.</div>' : '');
   }
 
   function splitCard(mk) {
@@ -1384,7 +1487,7 @@ var app = (function () {
     var s = ptr(), h = section('By month') + '<div class="list">';
     if (!L.rows.length) h += '<div class="empty">Counting starts in ' + monthName(D.settings.startMonth) + '.</div>';
     L.rows.slice().reverse().forEach(function (r) {
-      var pill = r.open > 0.005 ? '<span class="pill due">' + money(r.open) + ' open</span>'
+      var pill = r.open > 0.005 && !L.carry ? '<span class="pill due">' + money(r.open) + ' open</span>'
         : r.future > 0.005 ? '<span class="pill exp">' + money(r.future) + ' to come</span>'
         : r.charge > 0.004 ? '<span class="pill ok">Paid ✓</span>' : '<span class="pill exp">Nothing due</span>';
       h += '<div class="item tap" onclick="app.monthSheet(\'' + r.mk + '\')"><div class="grow"><div class="t">' + monthName(r.mk) + (r.current ? ' <span class="c-muted" style="font-weight:400">· now</span>' : '') + '</div>' +
@@ -1393,6 +1496,129 @@ var app = (function () {
     if (L.opening) h += '<div class="item"><div class="grow"><div class="t">Before ' + monthName(D.settings.startMonth) + '</div><div class="s">Opening balance ' + money(L.opening) + '</div></div>' +
       (L.opening > 0 ? '<span class="pill ' + (L.openingLeft <= 0.005 ? 'ok">Paid ✓' : 'due">' + money(L.openingLeft) + ' open') + '</span>' : '') + '</div>';
     return h + '</div>';
+  }
+
+  /* ================= HISTORY ================= */
+  function viewHistory() {
+    var L = ledger(), mv = isManagerView(), s = ptr(), m = mgr();
+    var h = '<div class="top"><div><h1>History</h1><div class="sub">' + (mv ? 'What ' + esc(s.name) + ' sends you, and why' : 'What you send ' + esc(m.name) + ', and why') + '</div></div></div>';
+    h += '<div style="margin-bottom:6px">' + seg('hist-view', [['pay', 'Payments'], ['months', 'By month']], histView, 'histViewPick') + '</div>';
+    if (histView === 'months') return h + splitCard(currentMk()) + monthsList(L);
+    return h + historyFeed(L);
+  }
+  function historyFeed(L) {
+    var H = payHistory(), mv = isManagerView(), s = ptr(), m = mgr(), t = today(), start = D.settings.startMonth, h = '';
+    if (start > currentMk()) return '<div class="card mt"><div class="empty">Counting starts on 1 ' + monthName(start) + '.</div></div>';
+    var due = sum(L.events.filter(function (e) { return e.past; }), 'amount'), owed = L.owed;
+    h += '<div class="card mt">' +
+      (L.opening ? kv('Open before ' + monthName(start, true), money(L.opening)) : '') +
+      kv(esc(Yours('p2')) + ' part since 1 ' + monthName(start, true), money(due)) +
+      kv(mv ? 'Sent to you' : 'You sent', money(L.paidIn), 'c-green') +
+      (L.paidOut > 0.005 ? kv(mv ? 'You sent back' : esc(m.name) + ' sent back', '+ ' + money(L.paidOut)) : '') +
+      '<div class="hr"></div>' +
+      kv(owed > 0.005 ? 'Open now' : owed < -0.005 ? 'Ahead by' : 'Right now', Math.abs(owed) > 0.005 ? money(Math.abs(owed)) : 'All square ✓', owed > 0.005 && !L.carry ? 'c-orange' : 'c-green') +
+      (L.carry ? '<div class="small">A small difference left over. It goes with the next transfer.</div>' : '') +
+      '<button class="link sm" style="padding:8px 0 0" onclick="app.balanceSheet()">How is this calculated? ›</button></div>';
+    var up = L.events.filter(function (e) { return !e.past && e.date <= addDays(t, 62); });
+    if (up.length) {
+      h += section('Coming up') + '<div class="list">';
+      up.forEach(function (e) { h += histEventRow(e); });
+      h += '</div>';
+    }
+    // Everything that already happened, newest first, grouped by month.
+    var groups = {};
+    function add(mk, x) { (groups[mk] = groups[mk] || []).push(x); }
+    L.events.forEach(function (e) { if (e.past) add(e.mk, { d: e.date, o: 1, html: histEventRow(e) }); });
+    H.pays.forEach(function (p) { add(String(p.t.date).slice(0, 7), { d: parseYmd(p.t.date), o: 0, html: transferHistRow(p) }); });
+    var mks = Object.keys(groups).sort().reverse(), shown = histAll ? mks : mks.slice(0, 3);
+    if (!mks.length) h += section('Earlier') + '<div class="list"><div class="empty">Nothing yet. ' + (mv ? esc(s.name) + '\'s' : 'Your') + ' first payday after 1 ' + monthName(start) + ' shows up here.</div></div>';
+    shown.forEach(function (mk) {
+      var r = L.rows.filter(function (x) { return x.mk === mk; })[0];
+      h += section(monthName(mk), r ? '<button class="link sm" onclick="app.monthSheet(\'' + mk + '\')">Month details</button>' : '');
+      if (r && r.charge > 0.004) h += '<div class="small" style="margin:-4px 4px 8px">' + esc(Yours('p2')) + ' part: ' + money(r.charge) + ' (' + pct(r.split.p2) + ' of ' + money(r.shared) + ' shared bills) · ' +
+        (r.open > 0.005 && !L.carry ? '<span class="c-orange">' + money(r.open) + ' open</span>' : r.future > 0.005 ? money(r.future) + ' still to come' : '<span class="c-green">all paid ✓</span>') + '</div>';
+      h += '<div class="list">' + groups[mk].sort(function (a, b) { return b.d - a.d || a.o - b.o; }).map(function (x) { return x.html; }).join('') + '</div>';
+    });
+    if (mks.length > shown.length) h += '<button class="btn gray sm" onclick="app.histMore()">Show ' + (mks.length - shown.length) + ' older month' + (mks.length - shown.length > 1 ? 's' : '') + '</button>';
+    if (L.opening && (histAll || mks.length <= shown.length)) {
+      var od = H.debts.filter(function (d) { return d.opening; })[0];
+      h += section('Before ' + monthName(start)) + '<div class="list"><div class="item"><div class="grow"><div class="t">' + (L.opening > 0 ? esc(s.name) + ' owed ' + esc(m.name) + ' ' + money(L.opening) : esc(m.name) + ' owed ' + esc(s.name) + ' ' + money(-L.opening)) + '</div>' +
+        '<div class="s">Entered in Settings → Tracking</div></div>' + (L.opening > 0 ? '<span class="pill ' + (L.openingLeft <= 0.005 ? 'ok">Paid ✓' : 'due">' + money(L.openingLeft) + ' open') + '</span>' : '') + '</div></div>';
+      if (od && od.settled && od.settled !== 'credit') h += '<div class="small" style="padding:0 4px">Paid off on ' + dayLong(parseYmd(od.settled.date)) + '.</div>';
+    }
+    var legacy = activeTransfers().filter(isLegacy), early = activeTransfers().filter(function (x) { return !isLegacy(x) && String(x.date) < start + '-01'; });
+    if (legacy.length || early.length) {
+      h += '<details class="mt"><summary>Not counted (' + (legacy.length + early.length) + ')</summary><div class="inner"><div class="small" style="margin-bottom:8px">' +
+        (legacy.length ? 'Payments from the old app are history only. ' : '') + (early.length ? 'Payments before 1 ' + monthName(start) + ' are not counted. ' : '') + 'Something still owed from before goes in Settings → Tracking.</div><div class="list">' +
+        legacy.concat(early).sort(function (a, b) { return a.date < b.date ? 1 : -1; }).map(transferRow).join('') + '</div></div></details>';
+    }
+    return h;
+  }
+  function histEventRow(e) {
+    var st = evStatus(e), est = e.src && e.src.expected, mv = isManagerView(), s = ptr(), m = mgr(), title, sub, text = st.text;
+    if (e.kind === 'pay') {
+      title = '💶 ' + esc(Yours('p2')) + ' ' + esc(e.src.label.toLowerCase()) + (!e.past ? ' lands' : est ? ' (not confirmed)' : ' landed');
+      sub = (est ? '≈' : '') + money(e.src.amount) + ' × ' + pct1(e.rate) + ' = <b class="w">' + money(e.amount) + '</b> for the shared bills';
+    } else if (e.kind === 'month') {
+      title = '💶 ' + esc(Yours('p2')) + ' part of ' + monthOnly(e.mk);
+      sub = pct(split(e.mk).p2) + ' of ' + money(sharedTotal(e.mk)) + ' shared bills, due when the ' + esc(e.src.label.toLowerCase()) + ' lands';
+    } else {
+      title = monthOnly(e.mk) + ' shared bills, 50/50';
+      sub = 'No pay was known that month';
+    }
+    if (!e.past && e.left > 0.005) text = e.paid > 0.005 ? money(e.paid) + ' already paid early' : '';
+    var stc = st.cls === 'ok' ? 'c-green' : st.cls === 'due' ? 'c-orange' : 'c-muted';
+    return '<div class="item tap" onclick="app.eventSheet(\'' + evKey(e) + '\')">' + dateTile(e.date) +
+      '<div class="grow"><div class="t">' + title + '</div><div class="s">' + sub + '</div>' + (text ? '<div class="h-st ' + stc + '">' + text + '</div>' : '') + '</div>' +
+      '<div style="text-align:right"><div class="amt">' + (est ? '≈ ' : '') + money(e.amount) + '</div><div style="margin-top:3px"><span class="pill ' + st.cls + '">' + st.pill + '</span></div></div></div>';
+  }
+  function transferHistRow(p) {
+    var x = p.t, mv = isManagerView(), s = ptr(), m = mgr(), title;
+    if (x.from === 'p2') title = mv ? esc(s.name) + ' sent you' : 'You sent ' + esc(m.name);
+    else title = mv ? 'You sent ' + esc(s.name) : esc(m.name) + ' sent you';
+    return '<div class="item tap" onclick="app.transferSheet(\'' + x.id + '\')">' + dateTile(parseYmd(x.date)) +
+      '<div class="grow"><div class="t">' + (p.back ? '↩️ ' : '✅ ') + title + '</div><div class="s">' + coversText(p) + (x.note ? ' · ' + esc(x.note) : '') + '</div></div>' +
+      '<div class="amt ' + (p.back ? 'c-red' : 'c-green') + '">' + money(x.amount) + '</div></div>';
+  }
+  // The fair rule for one month, in words.
+  function monthWhy(mk) {
+    var sp = split(mk), sh = sharedTotal(mk), m = mgr(), s = ptr(), past = mk < currentMk();
+    if (sh <= 0.004) return 'No shared bills in ' + monthOnly(mk) + '.';
+    if (sp.total <= 0) return 'No pay is known for ' + monthOnly(mk) + ', so the shared bills (' + money(sh) + ') are split 50/50.';
+    var exp = sp.a.expectedTotal + sp.b.expectedTotal > 0.004;
+    return 'In ' + monthOnly(mk) + ' the two of you ' + (past ? 'earned' : 'earn') + ' <b>' + money(sp.total) + '</b> together (' + esc(m.name) + ' ' + money(sp.a.total) + ', ' + esc(s.name) + ' ' + money(sp.b.total) + (exp ? ', partly still expected' : '') + ') and the shared bills ' + (past ? 'were' : 'are') + ' <b>' + money(sh) + '</b>. ' +
+      'So you both put <b>' + pct1(sh / sp.total) + '</b> of every euro you earn toward them: ' + esc(m.name) + ' keeps <b>' + money(sh * sp.p1) + '</b> for the bills and ' + esc(s.name) + ' sends <b>' + money(sh * sp.p2) + '</b>.';
+  }
+  // One payday of the partner: where the amount comes from, and how it was paid.
+  function eventSheet(k) {
+    var e = findEvent(k); if (!e) return;
+    var st = evStatus(e), est = e.src && e.src.expected, mv = isManagerView(), s = ptr(), m = mgr(), sp = split(e.mk), body = '';
+    if (e.kind === 'pay') {
+      body += kv(!e.past || est ? 'Expected on' : 'Landed on', dayLong(e.date)) + kv('Amount', (est ? '≈ ' : '') + money(e.src.amount));
+      if (est && e.past) body += '<div class="small c-orange">Not confirmed yet. Confirm the real amount in the Payday tab for the exact number.</div>';
+    } else body += kv('Due on', dayLong(e.date));
+    body += '<div class="hr"></div><div class="why" style="margin:8px 0 10px">' + monthWhy(e.mk) + '</div>';
+    if (e.kind === 'pay') body += '<div class="card" style="background:var(--card2);padding:10px 14px;margin:0">' + whyRow('From this pay: ' + (est ? '≈' : '') + money(e.src.amount) + ' × ' + pct1(e.rate), money(e.amount)) + '</div>';
+    else body += '<div class="card" style="background:var(--card2);padding:10px 14px;margin:0">' + whyRow(esc(Yours('p2')) + ' part', money(e.amount)) + '</div>';
+    body += '<div class="section" style="margin:18px 4px 8px"><h3>' + (mv ? 'What ' + esc(s.name) + ' sent for it' : 'What you sent for it') + '</h3></div>';
+    var by = (e.h && e.h.by) || [];
+    if (by.length) body += '<div class="card" style="background:var(--card2);padding:6px 14px;margin:0">' + by.map(function (b) { return whyRow(dayLong(parseYmd(b.t.date)) + (Math.abs(b.amount - b.t.amount) > 0.005 ? ' <span class="c-muted" style="font-weight:400">(part of ' + money(b.t.amount) + ')</span>' : ''), money(b.amount), 'c-green'); }).join('') +
+      (e.left > 0.005 ? whyRow(e.carried ? 'Goes with the next transfer' : 'Still open', money(e.left), e.carried ? 'c-muted' : 'c-orange') : '') + '</div>';
+    else if (e.h && e.h.settled === 'credit') body += '<div class="small">Covered by money sent before.</div>';
+    else body += '<div class="small">Nothing yet.</div>';
+    body += '<div class="h-st ' + (st.cls === 'ok' ? 'c-green' : st.cls === 'due' ? 'c-orange' : 'c-muted') + '" style="margin:10px 4px 0;font-size:14px">' + st.text + '</div>';
+    var expd = [];
+    ['p1', 'p2'].forEach(function (pid) { (pid === 'p1' ? sp.a : sp.b).expected.forEach(function (i) { expd.push(esc(yours(pid)) + ' ' + esc(i.label.toLowerCase()) + ' on ' + dayLabel(i.date)); }); });
+    if (expd.length && e.kind === 'pay' && !e.carried) body += '<div class="small mt">' + monthOnly(e.mk) + '\'s % can still change a little until all its pay is confirmed (still expected: ' + expd.join(', ') + '). Any difference is added to or taken off the next transfer, so nothing gets lost.</div>';
+    if (e.carried) body += '<div class="small mt">Why a difference? This part is ' + money(e.left) + ' more than what was sent. That happens when the month\'s % is recalculated after a pay is confirmed at a slightly different amount, or when a rounded amount was sent. It\'s simply added to the next transfer, so nothing gets lost.</div>';
+    else if (e.past && e.left > 0.005) {
+      var toSend = r2(openBefore(e) + e.left);
+      body += '<button class="btn go mt" onclick="app.closeSheet();app.quickSend(' + toSend + ')">' + (mv ? 'Mark ' + money(toSend) + ' as received' : 'I sent ' + money(toSend)) + '</button>';
+      if (toSend > e.left + 0.005) body += '<div class="small mt-s">Includes ' + money(toSend - e.left) + ' still open from before.</div>';
+    }
+    body += '<div class="btns mt">' + (e.kind === 'pay' ? '<button class="btn gray" onclick="app.openPay(\'p2\',\'' + e.src.key + '\')">See the split</button>' : '') +
+      '<button class="btn gray" onclick="app.monthSheet(\'' + e.mk + '\')">' + monthOnly(e.mk) + '</button></div>';
+    openSheet(e.kind === 'pay' ? Yours('p2') + ' ' + e.src.label.toLowerCase() : monthOnly(e.mk) + ' part', body);
   }
 
   /* ================= PAYDAY (Revolut split) ================= */
@@ -1407,7 +1633,7 @@ var app = (function () {
     var me = meId(), pid = payState.pid || me, p = person(pid);
     var sel = findItem(payState.key);
     if (!sel || sel.pid !== pid) sel = defaultItem(pid);
-    var h = '<div class="top"><div><h1>Payday</h1><div class="sub">Where every euro goes in Revolut</div></div><button class="link" onclick="app.divisionSheet(\'' + pid + '\')">Edit split</button></div>';
+    var h = '<div class="top"><div><h1>Payday</h1><div class="sub">Where every euro of a pay goes</div></div><button class="link" onclick="app.divisionSheet(\'' + pid + '\')">Edit split</button></div>';
     h += '<div style="margin-bottom:10px">' + seg('pay-who', [[me, person(me).name + ' (you)'], [otherId(me), person(otherId(me)).name]], pid, 'payWho') + '</div>';
     h += '<div style="margin-bottom:14px">' + seg('pay-view', [['pay', 'One payday'], ['month', 'Whole month']], payState.view, 'payView', 'mini') + '</div>';
     if (payState.view === 'month') h += monthDivisionCard(pid);
@@ -1430,7 +1656,7 @@ var app = (function () {
       '<div class="grow"><div class="t">' + esc(it.label) + '</div><div class="s">' + dayLong(it.date) + (it.moved ? ' · moved for weekend/holiday' : '') + (it.mk && it.rec && it.rec.slotMk && it.rec.slotMk !== ym(it.date) ? ' · for ' + monthName(it.rec.slotMk, true) : '') + '</div></div>' +
       '<div style="text-align:right"><div class="amt' + (it.logged ? ' c-green' : ' c-muted') + '">' + (it.logged ? '' : '≈ ') + money(it.amount) + '</div><div style="margin-top:3px">' + st + '</div></div></div>';
   }
-  var KIND_ORDER = { send: 0, move: 1, keep: 2 };
+  var KIND_ORDER = { send: 0, keep: 1, move: 2 }; // same order as the steps below the bar
   function barHtml(lines, amount) {
     if (!(amount > 0)) return '';
     return '<div class="dv-bar">' + lines.filter(function (l) { return l.amount > 0.004; }).sort(function (a, b) { return KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || lines.indexOf(a) - lines.indexOf(b); }).map(function (l) {
@@ -1456,15 +1682,52 @@ var app = (function () {
     if (x.short > 0.5) s += '<br><span class="c-orange">' + money(x.short) + ' less than planned</span>';
     return s;
   }
-  function keepSub(l, dv) {
-    if (l.key === 'bills') return 'Your part: ' + pct1(dv.rate) + ' of ' + (dv.frac === 1 && !dv.next ? 'pay' : 'this pay');
-    if (l.key === 'own') return 'Bills only ' + (dv.pid === meId() ? 'you pay' : person(dv.pid).name + ' pays');
+  function keepSub(l, dv, month) {
+    var mine = dv.pid === meId();
+    if (l.key === 'bills') return (mine ? 'Your' : esc(person(dv.pid).name) + '\'s') + ' part of the shared bills: ' + pct1(dv.rate) + ' of ' + (month ? 'pay' : 'this pay');
+    if (l.key === 'own') return 'Bills only ' + (mine ? 'you pay' : esc(person(dv.pid).name) + ' pays');
     return dv.leftTo === 'main' ? 'Everything left after the pockets' : 'Cents from rounding the pockets';
+  }
+  function tickBtn(id, key, on, label) {
+    return '<button class="tick' + (on ? ' on' : '') + '" onclick="app.tick(\'' + id + '\',\'' + key + '\')" aria-label="Mark ' + esc(label) + ' as done">✓</button>';
+  }
+  function whyRow(left, right, cls) { return '<div class="why-row"><span>' + left + '</span><span' + (cls ? ' class="' + cls + '"' : '') + '>' + right + '</span></div>'; }
+  // Keep in the bank → one deposit on Revolut → the pockets. o: { it: the pay (ticks only once it landed), month }
+  function keepMoveSteps(dv, n, o) {
+    var pid = dv.pid, p = person(pid), mine = pid === meId(), bank = esc(bankLabel(pid)), inRev = bankIsRevolut(pid), whose = mine ? 'your' : esc(p.name) + '\'s';
+    var it = o.it, canTick = !!(it && it.logged), ticks = canTick ? (it.rec.ticks || {}) : {}, h = '';
+    var keeps = dv.lines.filter(function (l) { return l.kind === 'keep'; });
+    if (keeps.length) {
+      h += stepHead(++n, 'Keep in ' + bank, money(sum(keeps, 'amount')));
+      keeps.forEach(function (l, i) { h += lineHtml(l, keepSub(l, dv, o.month), '', i === keeps.length - 1 ? 'last' : ''); });
+    }
+    var moves = dv.lines.filter(function (l) { return l.kind === 'move'; });
+    if (moves.length) {
+      var real = moves.filter(function (l) { return l.amount > 0.004; });
+      var done = real.filter(function (l) { return ticks[l.key]; }).length, all = real.length > 0 && done === real.length;
+      var prog = canTick && real.length ? (all ? '<span class="c-green">All done ✓</span>' : done + ' of ' + real.length + ' done') : money(dv.moved);
+      if (inRev) h += stepHead(++n, 'Move into ' + whose + ' pockets', prog);
+      else {
+        h += stepHead(++n, 'Move to Revolut', prog);
+        if (dv.moved > 0.004) {
+          var dep = canTick && (!!ticks.revolut || all);
+          h += '<div class="send">' + lineHtml({ name: 'Deposit on Revolut', icon: '➡️', color: P1C, amount: dv.moved },
+            (o.month ? 'Per month, from ' : 'One transfer from ') + bank + ' for all ' + whose + ' pockets',
+            canTick ? (all ? '<span class="tick on" aria-label="Done">✓</span>' : tickBtn(it.id, 'revolut', dep, 'the deposit')) : '', dep ? 'done' : '') + '</div>';
+          h += '<div class="dv-sub">Then in Revolut, put it in ' + whose + ' pockets:</div>';
+        }
+      }
+      moves.forEach(function (l, i) {
+        var on = !!ticks[l.key];
+        h += lineHtml(l, pocketSub(l, dv, o.month), canTick && l.amount > 0.004 ? tickBtn(it.id, l.key, on, l.name) : '', (on ? 'done' : '') + (inRev ? '' : ' pocket') + (i === moves.length - 1 ? ' last' : ''));
+      });
+    }
+    return { html: h, n: n };
   }
   function divisionCard(pid, it) {
     var p = person(pid), t = today(), mine = pid === meId(), m = mgr();
-    var dv = division(pid, it.amount, it.date, { key: it.key }), ticks = it.logged ? (it.rec.ticks || {}) : {};
-    var h = '<div class="card"><div class="dv-head"><div class="grow"><div class="label">' + esc(it.label) + ' · ' + dayLong(it.date) + '</div>' +
+    var dv = division(pid, it.amount, it.date, { key: it.key });
+    var h = '<div class="card"><div class="dv-head"><div class="grow"><div class="label">' + esc((mine ? '' : p.name + '\'s ') + it.label) + ' · ' + dayLong(it.date) + '</div>' +
       '<div class="big">' + (it.logged ? '' : '≈ ') + money(it.amount) + '</div></div>' +
       (it.logged ? '<button class="link sm" onclick="app.incomeSheet(\'' + it.id + '\')">Edit</button>' : '') + '</div>';
     if (!it.logged && it.date <= t) {
@@ -1480,12 +1743,12 @@ var app = (function () {
     if (pid === 'p2') {
       var send = dv.lines.filter(function (l) { return l.kind === 'send'; })[0], ev = dv.event;
       if (send) {
-        h += stepHead(++n, mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you');
-        var paid = ev && ev.left <= 0.005, before = ev ? openBefore(ev) : 0, toSend = ev ? r2(before + ev.left) : send.amount, sub;
+        h += stepHead(++n, mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you', money(send.amount));
+        var paid = ev && (ev.left <= 0.005 || ev.carried), before = ev ? openBefore(ev) : 0, toSend = ev ? r2(before + ev.left) : send.amount, sub;
         if (!ev) sub = 'Before counting started, not tracked';
-        else if (paid) sub = '<span class="c-green">✓ ' + (mine ? 'Sent' : 'Received') + '</span>';
-        else if (ev.paid > 0.005) sub = money(ev.paid) + ' already covered, ' + money(ev.left) + ' left';
-        else sub = pct1(dv.rate) + ' of ' + (ev.kind === 'month' ? 'all pay this month' : 'this pay') + ' · ' + (mine ? 'your' : 'the') + ' part of the shared bills';
+        else if (paid) sub = '<span class="c-green">✓ ' + evStatus(ev).text + '</span>';
+        else if (ev.paid > 0.005) sub = money(ev.paid) + ' already paid, ' + money(ev.left) + ' left';
+        else sub = (mine ? 'Your' : esc(p.name) + '\'s') + ' part of the shared bills: ' + pct1(dv.rate) + ' of ' + (ev.kind === 'month' ? 'all pay this month' : 'this pay');
         if (ev && !paid && before > 0.005) sub += '<br><span class="c-orange">+ ' + money(before) + ' still open from before → ' + money(toSend) + ' in total</span>';
         h += '<div class="send">' + lineHtml({ name: mine ? 'Send to ' + m.name : 'From ' + p.name, icon: '💸', color: P1C, amount: send.amount }, sub, paid ? '<span class="tick on" aria-label="Done">✓</span>' : '', '', toSend);
         if (ev && !paid && it.date <= t) {
@@ -1497,42 +1760,34 @@ var app = (function () {
         h += '<div class="banner">Nothing to send from this pay. ' + (mine ? 'Your' : esc(p.name) + '\'s') + ' part of the month (' + money(dv.anchor.amount) + ') is sent from the ' + esc(dv.anchor.src.label.toLowerCase()) + ' on ' + dayLabel(dv.anchor.date) + '.</div>';
       }
     }
-    var moves = dv.lines.filter(function (l) { return l.kind === 'move'; });
-    if (moves.length) {
-      var done = moves.filter(function (l) { return ticks[l.key]; }).length;
-      h += stepHead(++n, 'Move to pockets', it.logged ? (done === moves.length ? '<span class="c-green">All done ✓</span>' : done + ' of ' + moves.length + ' done') : '');
-      moves.forEach(function (l, i) {
-        var on = !!ticks[l.key];
-        h += lineHtml(l, pocketSub(l, dv, false), it.logged && l.amount > 0.004 ? '<button class="tick' + (on ? ' on' : '') + '" onclick="app.tick(\'' + it.id + '\',\'' + l.key + '\')" aria-label="Mark ' + esc(l.name) + ' as moved">✓</button>' : '', (on ? 'done' : '') + (i === moves.length - 1 ? ' last' : ''));
-      });
-    }
-    var keeps = dv.lines.filter(function (l) { return l.kind === 'keep'; });
-    if (keeps.length) {
-      h += stepHead(++n, 'Leave in main account', money(sum(keeps, 'amount')));
-      keeps.forEach(function (l, i) { h += lineHtml(l, keepSub(l, dv), '', i === keeps.length - 1 ? 'last' : ''); });
-    }
+    h += keepMoveSteps(dv, n, { it: it }).html;
     if (pid === 'p1' && Math.abs(daysBetween(it.date, t)) <= 31) {
       var L = ledger(), nx = L.events.filter(function (e) { return !e.past && e.left > 0.005; })[0], parts = [];
-      if (L.owed > 0.005) parts.push(money(L.owed) + ' that is open now');
+      if (L.owed > 0.005 && !L.carry) parts.push(money(L.owed) + ' that is open now');
       if (nx) parts.push((nx.src && nx.src.expected ? '≈' : '') + money(nx.left) + ' on ' + dayLabel(nx.date));
-      if (parts.length) h += '<div class="banner">➕ ' + esc(ptr().name) + ' also sends ' + parts.join(', then ') + ' into your main account for the shared bills.</div>';
+      if (parts.length) h += '<div class="banner">➕ On top of this, ' + esc(ptr().name) + ' sends ' + (mine ? 'you ' : esc(m.name) + ' ') + parts.join(', then ') + ' for the shared bills (they\'re paid from ' + esc(bankLabel('p1')) + ').</div>';
     }
     if (dv.shortfall > 0.5) h += '<div class="state bad">⚠️ This pay doesn\'t cover the bills part: ' + money(dv.shortfall) + ' short.</div>';
-    h += '<div class="small mt">This pay is ' + pct(dv.frac) + ' of ' + (mine ? 'your' : esc(p.name) + '\'s') + ' usual ' + money(dv.est) + ' a month, so fixed pockets get ' + pct(dv.frac) + ' of their monthly amount. Tap any amount to copy it for Revolut.</div>';
+    h += '<div class="small mt">This pay is ' + pct(dv.frac) + ' of ' + (mine ? 'your' : esc(p.name) + '\'s') + ' usual ' + money(dv.est) + ' a month, so pockets set in € a month get ' + pct(dv.frac) + ' of their monthly amount. Tap any amount to copy it.</div>';
     return h + '</div>';
   }
   function monthDivisionCard(pid) {
     var p = person(pid), mk = currentMk(), est = monthlyEstimate(pid, mk), mine = pid === meId(), m = mgr();
     if (!(est > 0)) return '<div class="card"><div class="empty">No usual pay known yet for ' + esc(p.name) + '.</div></div>';
     var dv = division(pid, est, parseYmd(mk + '-15'), { month: true });
+    var send = dv.lines.filter(function (l) { return l.kind === 'send'; })[0], keepT = sum(dv.lines.filter(function (l) { return l.kind === 'keep'; }), 'amount');
     var h = '<div class="card"><div class="label">A normal month · ' + esc(payText(p)) + '</div><div class="big">≈ ' + money(est) + '</div>';
     h += barHtml(dv.lines, est);
-    var shown = dv.lines.slice().sort(function (a, b) { return KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || dv.lines.indexOf(a) - dv.lines.indexOf(b); });
-    shown.forEach(function (l, i) {
-      var sub = l.kind === 'move' ? pocketSub(l, dv, true) : l.kind === 'send' ? pct1(dv.rate) + ' of pay · ' + (sendMode() === 'monthly' ? 'all at once on one payday' : 'a part on every payday') : keepSub(l, dv);
-      var name = l.kind === 'send' && !mine ? 'From ' + p.name : l.name;
-      h += lineHtml({ name: name, icon: l.icon, color: l.color, amount: l.amount }, sub, '', i === shown.length - 1 ? 'last' : '');
-    });
+    h += '<div style="margin:4px 0 2px">' +
+      (send ? whyRow('💸 ' + (mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you'), money(send.amount)) : '') +
+      whyRow('🏦 Keep in ' + esc(bankLabel(pid)), money(keepT)) +
+      (dv.moved > 0.004 ? whyRow(bankIsRevolut(pid) ? '🐷 Into the pockets' : '➡️ Deposit on Revolut', money(dv.moved), 'c-blue') : '') + '</div>';
+    var n = 0;
+    if (send) {
+      h += stepHead(++n, mine ? 'Send to ' + esc(m.name) : esc(p.name) + ' sends you', money(send.amount));
+      h += lineHtml({ name: mine ? 'Send to ' + m.name : 'From ' + p.name, icon: '💸', color: P1C, amount: send.amount }, pct1(dv.rate) + ' of pay · ' + (sendMode() === 'monthly' ? 'all at once on one payday' : 'a part on every payday'), '', 'last');
+    }
+    h += keepMoveSteps(dv, n, { month: true }).html;
     if (dv.shortfall > 0.5) h += '<div class="state bad">⚠️ The usual pay doesn\'t cover the bills: ' + money(dv.shortfall) + ' short.</div>';
     return h + '<div class="small mt">Shared bills are ' + money(sharedTotal(mk)) + ' this month. Change pockets and order with Edit split.</div></div>';
   }
@@ -1541,7 +1796,9 @@ var app = (function () {
   function viewBills() {
     var bills = activeBills().slice().sort(function (a, b) { return a.day - b.day; });
     var sp = split(currentMk()), total = sharedMonthlyNow(), me = meId(), t = today();
-    var h = '<div class="top"><div><h1>Bills</h1><div class="sub">Shared bills are paid from ' + esc(mgr().name) + '\'s account.</div></div><button class="link" onclick="app.billSheet()">+ Add</button></div>';
+    var h = '<div class="top"><div><h1>Bills</h1><div class="sub">Shared bills are paid from ' + esc(mgr().name) + '\'s ' + esc(bankLabel('p1')) + '.</div></div><button class="link" onclick="app.billSheet()">+ Add</button></div>';
+    h += '<div style="margin-bottom:14px">' + seg('bills-view', [['soon', 'Coming up'], ['all', 'All bills']], billsView, 'billsViewPick') + '</div>';
+    if (billsView === 'soon') return h + '<div class="small" style="margin:-4px 4px 10px">The next 5 weeks: bills, paydays and what ' + esc(ptr().name) + ' sends.</div>' + timelineHtml(35);
     h += '<div class="card">' + kv('Shared bills per month', money(total)) +
       kv('<span class="dot" style="background:var(--p2)"></span>' + esc(ptr().name) + ' (' + pct(sp.p2) + ' this month)', money(total * sp.p2)) +
       kv('<span class="dot" style="background:var(--p1)"></span>' + esc(mgr().name) + ' (' + pct(sp.p1) + ')', money(total * sp.p1)) +
@@ -1578,7 +1835,7 @@ var app = (function () {
       h += field(esc(k.icon + ' ' + k.name) + ': what\'s left? <span style="text-transform:none;font-weight:400">(plan ' + money(monthlyPlan(pid, k, currentMk())) + '/month)</span>', moneyInput('ci-' + k.id, '', ''));
     });
     savePockets(p).forEach(function (k) { h += field(esc(k.icon + ' ' + k.name) + ' balance', moneyInput('ci-' + k.id, '', '')); });
-    if (pid === 'p1') h += field('🏦 Main account balance', moneyInput('ci-main', '', ''));
+    if (pid === 'p1') h += field('🏦 ' + esc(bankLabel('p1')) + ' balance', moneyInput('ci-main', '', ''));
     h += '<button class="btn" onclick="app.saveCheckin(\'' + pid + '\')">Check in</button>' +
       '<div class="small mt">Leave a field empty if you don\'t know it. Look at the pocket balances in the Revolut app.</div></div>';
     if (last) {
@@ -1603,7 +1860,7 @@ var app = (function () {
       cs.slice(0, 10).forEach(function (c) {
         var b = ciBal(c), parts = p.pockets.filter(function (k) { return b[k.id] != null; }).map(function (k) { return k.name + ' ' + money(b[k.id]); });
         Object.keys(b).forEach(function (id) { if (!byId(p.pockets, id)) parts.push(id + ' ' + money(b[id])); });
-        if (c.main != null && c.main !== '') parts.push('Main ' + money(+c.main));
+        if (c.main != null && c.main !== '') parts.push(bankLabel('p1') + ' ' + money(+c.main));
         h += '<div class="item tap" onclick="app.delCheckinSheet(\'' + c.id + '\')"><div class="grow"><div class="t">' + dayLong(parseYmd(c.date)) + '</div><div class="s">' + esc(parts.join(' · ') || 'Empty') + '</div></div></div>';
       });
       h += '</div>';
@@ -1634,7 +1891,8 @@ var app = (function () {
     ev.drops.forEach(function (d) { body += alertHtml({ lvl: 'warn', ic: d.k.icon, html: '<b>' + esc(d.k.name) + ' went down ' + money(d.by) + '</b> since ' + dayLabel(parseYmd(d.since)) + '.' }); });
     if (pid === 'p1' && main != null) {
       var tb = targetBalance(), gap = main - tb.total;
-      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: 'Main account covers everything until ' + dayLabel(tb.nextPay) + ' (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>Main account is ' + money(-gap) + ' short</b> for the bills up to ' + dayLabel(tb.nextPay) + '.' });
+      var bk = esc(bankLabel('p1'));
+      body += alertHtml(gap >= 0 ? { lvl: 'good', ic: '✅', html: bk + ' covers every bill until ' + dayLabel(tb.nextPay) + ' (' + money(gap) + ' spare).' } : { lvl: 'bad', ic: '⚠️', html: '<b>' + bk + ' is ' + money(-gap) + ' short</b> for the bills up to ' + dayLabel(tb.nextPay) + '.' });
     }
     advice(pid).filter(function (a) { return a.ic === '💡'; }).forEach(function (a) { body += alertHtml(a); });
     openSheet('Check-in done', (body || '<div class="small">Saved.</div>') + '<button class="btn gray mt" onclick="app.closeSheet()">OK</button>');
@@ -1873,6 +2131,8 @@ var app = (function () {
   function paySheet(pid) {
     var p = person(pid);
     var body = field('Name', '<input id="ps-name" value="' + esc(p.name) + '">') +
+      field('Bank where pay lands', '<input id="ps-bank" placeholder="e.g. Belfius" value="' + esc(p.bank || '') + '">') +
+      '<div class="small" style="margin:-6px 4px 14px">' + (p.role === 'manager' ? 'The shared bills are paid from here. ' : '') + 'The pockets are in Revolut, so the Payday tab tells you how much to deposit there.</div>' +
       field('How pay arrives', seg('ps-mode', [['dual', 'Voorschot + rest'], ['single', 'Once a month'], ['irregular', 'Random']], p.payMode, 'personModeChanged')) +
       '<div id="ps-fixed" style="' + (p.payMode === 'irregular' ? 'display:none' : '') + '">' +
       '<div class="btns"><div style="flex:0 0 90px">' + field('Day', '<input id="ps-d1" inputmode="numeric" value="' + esc(p.day1) + '">') + '</div>' + field('<span id="ps-a1l">' + (p.payMode === 'dual' ? 'Voorschot (about)' : 'Amount (about)') + '</span>', moneyInput('ps-a1', p.amount1, '')) + '</div>' +
@@ -1893,6 +2153,7 @@ var app = (function () {
     var p = person(pid), name = val('ps-name').trim();
     if (!name) return toast('Enter a name');
     p.name = name; p.payMode = segVal('ps-mode') || p.payMode;
+    p.bank = val('ps-bank').trim().slice(0, 30);
     p.day1 = clamp(parseInt(val('ps-d1'), 10) || 1, 1, 31);
     p.amount1 = r2(parseEuro(val('ps-a1')) || 0);
     p.day2 = clamp(parseInt(val('ps-d2'), 10) || 1, 1, 31);
@@ -1931,8 +2192,8 @@ var app = (function () {
     h += '<button class="btn gray sm" onclick="app.edAdd()">+ Add pocket</button>';
     h += '<div class="field mt"><label>Whatever is left goes to</label><select id="ed-left" onchange="app.edLeft(this.value)">' +
       ed.pockets.map(function (k) { return '<option value="' + esc(k.id) + '"' + (ed.leftover === k.id ? ' selected' : '') + '>' + esc(k.icon + ' ' + (k.name || 'Pocket')) + '</option>'; }).join('') +
-      '<option value="main"' + (ed.leftover === 'main' ? ' selected' : '') + '>🏦 Stays in main account</option></select></div>';
-    h += '<label class="toggle field"><div><div style="font-weight:500">Round pockets to whole euros</div><div class="small">Easier to move. The cents stay in the main account.</div></div><input type="checkbox"' + (ed.round ? ' checked' : '') + ' onchange="app.edRound(this.checked)"></label>';
+      '<option value="main"' + (ed.leftover === 'main' ? ' selected' : '') + '>🏦 Stays in ' + esc(bankLabel(ed.pid)) + '</option></select></div>';
+    h += '<label class="toggle field"><div><div style="font-weight:500">Round pockets to whole euros</div><div class="small">Easier to move. The cents stay in ' + esc(bankLabel(ed.pid)) + '.</div></div><input type="checkbox"' + (ed.round ? ' checked' : '') + ' onchange="app.edRound(this.checked)"></label>';
     h += '<div id="ed-prev"></div>';
     h += '<button class="btn" onclick="app.edCommit()">Save split</button>';
     $('ed-body').innerHTML = h;
@@ -1983,7 +2244,7 @@ var app = (function () {
   function monthSheet(mk) {
     var L = ledger(), r = L.rows.filter(function (x) { return x.mk === mk; })[0], m = mgr(), s = ptr(), counted = !!r;
     var sp = split(mk), sh = sharedTotal(mk), evs = r ? r.events : monthEvents(mk), t = today();
-    var body = kv(esc(m.name) + ' earned', money(sp.a.total)) + (sp.a.expectedTotal ? '<div class="small" style="margin-top:-4px">' + money(sp.a.expectedTotal) + ' of it still expected</div>' : '') +
+    var body = '<div class="why" style="margin:-6px 0 10px">' + monthWhy(mk) + '</div>' + kv(esc(m.name) + ' earned', money(sp.a.total)) + (sp.a.expectedTotal ? '<div class="small" style="margin-top:-4px">' + money(sp.a.expectedTotal) + ' of it still expected</div>' : '') +
       kv(esc(s.name) + ' earned', money(sp.b.total)) + (sp.b.expectedTotal ? '<div class="small" style="margin-top:-4px">' + money(sp.b.expectedTotal) + ' of it still expected</div>' : '') +
       '<div class="hr"></div>' + kv('Split', pct(sp.p1) + ' / ' + pct(sp.p2)) + kv('Shared bills that month', money(sh)) +
       (sp.total > 0 ? kv('Share of every euro earned', pct1(sh / sp.total)) : '') +
@@ -1991,8 +2252,10 @@ var app = (function () {
     if (evs.length) {
       body += '<div class="section" style="margin:16px 4px 8px"><h3>When it\'s due</h3></div><div class="list">';
       evs.forEach(function (e) {
-        var st = !counted ? '<span class="pill exp">not counted</span>' : e.left <= 0.005 ? '<span class="pill ok">Paid ✓</span>' : e.date > t ? '<span class="pill exp">' + relDay(e.date) + '</span>' : '<span class="pill due">' + money(e.left) + ' open</span>';
-        body += '<div class="item"><div class="grow"><div class="t">' + dayLong(e.date) + '</div><div class="s">' + esc(evLabel(e)) + (e.src && e.src.expected ? ' · expected' : '') + '</div></div><div style="text-align:right"><div class="amt">' + money(e.amount) + '</div>' + st + '</div></div>';
+        if (!counted) { body += '<div class="item"><div class="grow"><div class="t">' + dayLong(e.date) + '</div><div class="s">' + esc(evLabel(e)) + '</div></div><div style="text-align:right"><div class="amt">' + money(e.amount) + '</div><span class="pill exp">not counted</span></div></div>'; return; }
+        var st = evStatus(e);
+        body += '<div class="item tap" onclick="app.eventSheet(\'' + evKey(e) + '\')"><div class="grow"><div class="t">' + dayLong(e.date) + '</div><div class="s">' + evWhy(e) + '</div>' +
+          '<div class="h-st ' + (st.cls === 'ok' ? 'c-green' : st.cls === 'due' ? 'c-orange' : 'c-muted') + '">' + st.text + '</div></div><div style="text-align:right"><div class="amt">' + (e.src && e.src.expected ? '≈ ' : '') + money(e.amount) + '</div><span class="pill ' + st.cls + '">' + st.pill + '</span></div><span class="chev">›</span></div>';
       });
       body += '</div>';
     }
@@ -2041,19 +2304,20 @@ var app = (function () {
       '<div class="amt">' + money(x.amount) + '</div></div>';
   }
   function targetSheet() {
-    var tb = targetBalance(), body = '<div class="small" style="margin-bottom:10px">Your next pay: <b>' + dayLong(tb.nextPay) + '</b>. Everything your main account pays until then (that day included), plus the part to put aside for bills that come less often.</div><div class="list">';
+    var tb = targetBalance(), bk = esc(bankLabel('p1')), body = '<div class="small" style="margin-bottom:10px">Your next pay: <b>' + dayLong(tb.nextPay) + '</b>. Every bill that leaves ' + bk + ' until then (that day included), plus the part to set aside for bills that come less often. Revolut isn\'t part of this.</div><div class="list">';
     if (!tb.rows.length) body += '<div class="empty">No bills from your account.</div>';
     tb.rows.forEach(function (r) {
       var sub = r.kind === 'due' ? 'Due ' + dayLong(r.due) : r.kind === 'saving' ? 'Due ' + dayLabel(r.due) + ' · ' + pct(r.frac) + ' put aside by now' : 'Due ' + dayLabel(r.due) + ' · after your pay';
       body += '<div class="item"><div class="grow"><div class="t">' + esc(r.b.title) + (r.b.shared ? '<span class="tag sh">shared</span>' : '') + '</div><div class="s">' + sub + '</div></div><div class="amt' + (r.need > 0.004 ? '' : ' c-muted') + '">' + money(r.need) + '</div></div>';
     });
     body += '</div>' + kv('Total needed today', money(tb.total));
-    openSheet('Main account', body);
+    openSheet(bankLabel('p1'), body);
   }
   function mainSheet() {
     var last = lastMain();
-    openSheet('Main account balance', field('What\'s in your main account now?', moneyInput('mb-amt', '')) +
-      '<div class="small" style="margin:-6px 4px 14px">Your Revolut main balance, not the pockets.' + (last ? ' Last time: ' + money(+last.main) + ' on ' + dayLabel(parseYmd(last.date)) + '.' : '') + '</div>' +
+    var bk = bankLabel('p1');
+    openSheet(bk + ' balance', field('What\'s in ' + esc(bk) + ' now?', moneyInput('mb-amt', '')) +
+      '<div class="small" style="margin:-6px 4px 14px">The account the bills are paid from. Not Revolut.' + (last ? ' Last time: ' + money(+last.main) + ' on ' + dayLabel(parseYmd(last.date)) + '.' : '') + '</div>' +
       '<button class="btn" onclick="app.saveMain()">Save</button>');
     setTimeout(function () { var e = $('mb-amt'); if (e) e.focus(); }, 300);
   }
@@ -2151,6 +2415,10 @@ var app = (function () {
     incomeSheet: incomeSheet, saveIncome: saveIncome, delIncome: delIncome, incFormChanged: incFormChanged, incSlotPicked: incSlotPicked,
     landed: landed, confirmItem: confirmItem, openPay: openPay, pickPay: pickPay, tick: tick, quickSend: quickSend, payRevolut: payRevolut,
     payWho: function (v) { payState = { pid: v, key: null, mk: null, view: payState.view }; render(); },
+    histViewPick: function (v) { histView = v === 'months' ? 'months' : 'pay'; render(); },
+    histMore: function () { histAll = true; render(); },
+    billsViewPick: function (v) { billsView = v === 'all' ? 'all' : 'soon'; render(); },
+    eventSheet: eventSheet,
     payView: function (v) { payState.view = v; render(); },
     payMonth: function (n) { var sel = findItem(payState.key) || defaultItem(payState.pid || meId()), mk = mkAdd(payState.mk || (sel ? ym(sel.date) : currentMk()), n); if (mk > mkAdd(currentMk(), 1)) return; payState.mk = mk; render(); },
     openPayMonth: function (pid, mk) { payState = { pid: pid, key: null, mk: mk, view: 'pay' }; var it = incomeFor(pid, mk).items[0]; if (it) payState.key = it.key; go('payday'); },
@@ -2164,7 +2432,7 @@ var app = (function () {
     saveTracking: saveTracking, setSendMode: setSendMode, setSendSlot: setSendSlot, saveTag: saveTag,
     copySync: copySync, pasteSync: pasteSync, onPaste: onPaste, importSync: importSync, copySummary: copySummary,
     // for debugging in the browser console
-    _data: function () { return D; }, _ledger: ledger, _split: split, _division: division, _target: targetBalance,
+    _data: function () { return D; }, _ledger: ledger, _history: payHistory, _split: split, _division: division, _target: targetBalance,
     _timeline: timeline, _advice: advice, _parseEuro: parseEuro, _exportCode: exportCode, _cloud: function () { return cloud; }
   };
   return api;
